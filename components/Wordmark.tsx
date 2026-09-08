@@ -96,11 +96,20 @@ export default function Wordmark({ baseFontClassName }: { baseFontClassName: str
       if (!active || !type || !button) return;
       type.style.fontSize = '';
       const width = button.clientWidth;
-      if (!width) return;
-      const contentWidth = Math.max(...Array.from(type.children, (el) => el.getBoundingClientRect().width), type.scrollWidth);
-      if (contentWidth > width) {
-        const size = parseFloat(getComputedStyle(type).fontSize);
-        type.style.fontSize = `${size * width / contentWidth}px`;
+      if (width <= 1) return;
+      const measureWidth = () => Math.max(
+        type.scrollWidth,
+        ...Array.from(type.children, (el) => el.getBoundingClientRect().width)
+      );
+      let contentWidth = measureWidth();
+      let size = parseFloat(getComputedStyle(type).fontSize);
+      // Glyph rounding makes a proportional estimate inexact across browsers.
+      // Round down to whole CSS pixels so corrections always make progress,
+      // then verify the actual width before painting. Never shrink to zero.
+      while (contentWidth > width && size > 1) {
+        size = Math.max(1, Math.floor(size * (width - 1) / contentWidth));
+        type.style.fontSize = `${size}px`;
+        contentWidth = measureWidth();
       }
     }
     fit();

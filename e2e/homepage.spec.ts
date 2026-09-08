@@ -16,18 +16,20 @@ async function warmFonts(page: Page) {
 async function expectFits(page: Page) {
   const sizes = await type(page).evaluate((el) => ({
     type: el.scrollWidth,
+    glyphLine: Math.max(...Array.from(el.children, (child) => child.getBoundingClientRect().width)),
     available: el.parentElement!.clientWidth,
     page: document.documentElement.scrollWidth,
     viewport: innerWidth,
   }));
   expect(sizes.type).toBeLessThanOrEqual(sizes.available);
+  expect(sizes.glyphLine).toBeLessThanOrEqual(sizes.available);
   expect(sizes.page).toBeLessThanOrEqual(sizes.viewport);
 }
 async function noteBox(page: Page) {
   return page.locator('.letterhead-note').boundingBox();
 }
 
-for (const width of [320, 390, 639, 640, 768, 1440]) {
+for (const width of [320, 321, 390, 639, 640, 768, 1440]) {
   test.describe(`${width}px`, () => {
     test.use({ viewport: { width, height: 900 }, hasTouch: width < 1000 });
 
