@@ -20,7 +20,7 @@ paper; visual choices do not randomize independently.
 
 ## Type
 
-- Display type leads, with a smaller companion size for LLC; body is 16px
+- Display type leads, with a small inline suffix for LLC; body is 16px
   at ≤ 60ch and 1.6 leading, and feedback uses 13px fine print.
 - Flush left, ragged right. Never centered, never justified.
 - Recede by color, not size: non-focal text steps down one ink.
@@ -28,8 +28,9 @@ paper; visual choices do not randomize independently.
   leading) and returns to 16px from 640px up.
 - The wordmark is one line on desktop and two on phones: JJH / DIGITAL.
   Display type fits a reserved masthead; its footprint never pushes the
-  paragraph or contact when the face changes. LLC sits below at 28–44px,
-  sharing the wordmark's face, tracking, ink, and movement in every mood.
+  paragraph or contact when the face changes. LLC sits immediately after
+  DIGITAL on the same baseline, like a small period. It scales with the
+  name at 0.24em (at least 13px) and shares its face, tracking, ink, and movement.
 
 ## Color
 
@@ -50,6 +51,9 @@ Never: dashboard density, SaaS landing page, cards.
 - A tap on the type or the single rotation icon draws another complete design.
   Space does the same; Shift + Space goes back. The icon has an accessible
   name and keyboard hint, with no visible shuffle label or second control.
+- The rotation control sits at the upper right of the masthead, above the
+  lettering, with clear space around its touch target. LLC ends the name
+  at the lower right; it never moves onto a separate caption line.
 - A new paper and its loaded face appear together. A failed font leaves
   the current composition intact. Public shuffle fonts are bundled.
 - Presses have a small downward give; new type settles in once. No idle
@@ -62,7 +66,6 @@ Never: dashboard density, SaaS landing page, cards.
   is a quiet, familiar affordance; feedback reserves space, and a failed
   clipboard offers a working mail link.
 
-The mobile masthead and separate legal imprint deliberately replace the
-small single-line lockup: the name should remain the focal point on a
-phone. LLC remains a visible part of that identity, and a single rotation
-control keeps the one flourish available without adding more copy.
+The two-line mobile masthead keeps the name prominent on a phone. DIGITAL
+and its LLC suffix stay together as one line. A single rotation control
+keeps the one flourish available without adding more copy.

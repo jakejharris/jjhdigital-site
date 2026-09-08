@@ -37,6 +37,11 @@
   margin: auto;
 }
 
+.masthead {
+  position: relative;
+  padding-top: 64px;
+}
+
 .wordmark {
   display: flex;
   width: 100%;
@@ -68,19 +73,14 @@
   transform: translateY(2px);
 }
 
-.masthead-caption {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  margin-top: 24px;
-  color: var(--homepage-body);
-  font-size: 13px;
-  line-height: 1.6;
+.wordmark-ending {
+  white-space: nowrap;
 }
 
 .wordmark-llc {
-  font-size: clamp(28px, 4vw, 44px);
+  display: inline-block;
+  margin-left: .35em;
+  font-size: max(13px, .24em);
   line-height: 1;
   font-weight: 400;
   letter-spacing: var(--homepage-wordmark-tracking);
@@ -88,9 +88,12 @@
 }
 
 .mood-controls {
-  position: relative;
+  position: absolute;
+  top: 0;
+  right: 0;
   display: flex;
   align-items: center;
+  color: var(--homepage-body);
 }
 
 .mood-rotate {
@@ -142,6 +145,7 @@
   max-width: 128px;
   transform: translateY(-50%);
   font-size: 13px;
+  line-height: 1.6;
   text-align: right;
 }
 
@@ -249,16 +253,13 @@
     max-height: 304px;
   }
   .wordmark-type {
-    font-size: calc((100vw - 48px) * .265);
+    font-size: calc((100vw - 48px) * .235);
     line-height: .95;
     white-space: normal;
   }
   .wordmark-type > span {
     display: block;
     width: max-content;
-  }
-  .masthead-caption {
-    gap: 8px;
   }
   .letterhead-note {
     max-width: none;

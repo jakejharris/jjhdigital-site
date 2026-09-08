@@ -27,7 +27,6 @@ export default function Wordmark({ baseFontClassName }: { baseFontClassName: str
   const [announcement, setAnnouncement] = useState('');
   const wordmarkRef = useRef<HTMLButtonElement>(null);
   const typeRef = useRef<HTMLSpanElement>(null);
-  const llcRef = useRef<HTMLSpanElement>(null);
   const undoSpace = useRef(false);
   const current = useRef(initialDesign);
   const request = useRef(0);
@@ -87,7 +86,7 @@ export default function Wordmark({ baseFontClassName }: { baseFontClassName: str
   }, []);
 
   // The masthead has its own reserved space. Fitting type never moves the
-  // caption, paragraph, or contact, even for the widest face or at 200% zoom.
+  // paragraph or contact, even for the widest face or at 200% zoom.
   useIsomorphicLayoutEffect(() => {
     const type = typeRef.current;
     const button = wordmarkRef.current;
@@ -122,11 +121,11 @@ export default function Wordmark({ baseFontClassName }: { baseFontClassName: str
 
   useEffect(() => {
     if (design === initialDesign || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const animations = [typeRef.current, llcRef.current].map((element) => element?.animate(
+    const animation = typeRef.current?.animate(
       [{ transform: 'translateY(4px)', opacity: 0.8 }, { transform: 'translateY(0)', opacity: 1 }],
       { duration: 220, easing: 'cubic-bezier(.2,.7,.2,1)' }
-    ));
-    return () => animations.forEach((animation) => animation?.cancel());
+    );
+    return () => animation?.cancel();
   }, [design]);
 
   useEffect(() => {
@@ -181,31 +180,32 @@ export default function Wordmark({ baseFontClassName }: { baseFontClassName: str
             onKeyUp={onShuffleKeyUp}
           >
             <span ref={typeRef} className="wordmark-type" style={{ fontFamily: displayFamily }}>
-              <span>JJH</span>{' '}<span>DIGITAL</span>
+              <span>JJH</span>{' '}
+              <span className="wordmark-ending">
+                <span className="wordmark-digital">DIGITAL</span>
+                <span className="wordmark-llc" aria-hidden="true">LLC</span>
+              </span>
             </span>
           </button>
         </h1>
-        <div className="masthead-caption">
-          <span ref={llcRef} className={`wordmark-llc ${baseFontClassName}`} style={{ fontFamily: displayFamily }} aria-hidden="true">LLC</span>
-          <div className="mood-controls">
-            <button
-              type="button"
-              className="mood-rotate"
-              onClick={shuffle}
-              onKeyDown={onShuffleKeyDown}
-              onKeyUp={onShuffleKeyUp}
-              aria-label="Next style"
-              aria-describedby="shuffle-hint"
-              aria-keyshortcuts="Space Shift+Space"
-              aria-busy={loadState === 'loading'}
-              title="Next style · Shift + Space to undo"
-            >
-              <span className="mood-rotate-glyph" style={{ '--mood-turn': `${turns * -360}deg` } as CSSProperties}>
-                <RotateCcw className="mood-rotate-icon" size={20} strokeWidth={1.5} aria-hidden="true" />
-              </span>
-            </button>
-            {loadState === 'error' && <span className="mood-error">Style unavailable. Try again.</span>}
-          </div>
+        <div className="mood-controls">
+          <button
+            type="button"
+            className="mood-rotate"
+            onClick={shuffle}
+            onKeyDown={onShuffleKeyDown}
+            onKeyUp={onShuffleKeyUp}
+            aria-label="Next style"
+            aria-describedby="shuffle-hint"
+            aria-keyshortcuts="Space Shift+Space"
+            aria-busy={loadState === 'loading'}
+            title="Next style · Shift + Space to undo"
+          >
+            <span className="mood-rotate-glyph" style={{ '--mood-turn': `${turns * -360}deg` } as CSSProperties}>
+              <RotateCcw className="mood-rotate-icon" size={20} strokeWidth={1.5} aria-hidden="true" />
+            </span>
+          </button>
+          {loadState === 'error' && <span className="mood-error">Style unavailable. Try again.</span>}
         </div>
       </div>
       <span id="shuffle-hint" className="sr-only">Tap or press Space to shuffle. Shift + Space goes back.</span>

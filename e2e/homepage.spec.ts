@@ -25,6 +25,17 @@ async function expectFits(page: Page) {
   expect(sizes.type).toBeLessThanOrEqual(sizes.available);
   expect(sizes.glyphLine).toBeLessThanOrEqual(sizes.available);
   expect(sizes.page).toBeLessThanOrEqual(sizes.viewport);
+  const digital = (await page.locator('.wordmark-digital').boundingBox())!;
+  const llc = (await page.locator('.wordmark-llc').boundingBox())!;
+  expect(llc.x).toBeGreaterThanOrEqual(digital.x + digital.width);
+  expect(llc.y).toBeGreaterThan(digital.y);
+  expect(llc.y + llc.height).toBeLessThanOrEqual(digital.y + digital.height + 1);
+  if (await rotate(page).isVisible()) {
+    const control = (await rotate(page).boundingBox())!;
+    const masthead = (await page.locator('.masthead').boundingBox())!;
+    expect(control.x + control.width).toBe(masthead.x + masthead.width);
+    expect(control.y + control.height).toBeLessThan((await shuffle(page).boundingBox())!.y);
+  }
 }
 async function noteBox(page: Page) {
   return page.locator('.letterhead-note').boundingBox();
@@ -52,7 +63,10 @@ for (const width of [320, 321, 390, 639, 640, 768, 1440]) {
       const originalBox = await noteBox(page);
       const llc = page.locator('.wordmark-llc');
       await expect(llc).toHaveCSS('font-family', initialType);
-      expect(await llc.evaluate((el) => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(28);
+      expect(await llc.evaluate((el) => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(13);
+      expect(await llc.evaluate((el) => parseFloat(getComputedStyle(el).fontSize))).toBeLessThan(
+        await type(page).evaluate((el) => parseFloat(getComputedStyle(el).fontSize) / 2)
+      );
       await expect(page.locator('.mood-controls button')).toHaveCount(1);
       await expect(page.getByText('Change the mood', { exact: true })).toHaveCount(0);
       expect((await rotate(page).boundingBox())!.width).toBeGreaterThanOrEqual(44);
@@ -133,7 +147,7 @@ test('failed font keeps the complete current mood; another choice still works', 
   const errorBox = (await page.locator('.mood-error').boundingBox())!;
   const llcBox = (await page.locator('.wordmark-llc').boundingBox())!;
   const controlBox = (await rotate(page).boundingBox())!;
-  expect(errorBox.x).toBeGreaterThan(llcBox.x + llcBox.width);
+  expect(errorBox.y + errorBox.height).toBeLessThan(llcBox.y);
   expect(errorBox.x + errorBox.width).toBeLessThan(controlBox.x);
   expect(errorBox.y + errorBox.height).toBeLessThan((await noteBox(page))!.y);
   await expect(type(page)).toHaveCSS('font-family', before);
