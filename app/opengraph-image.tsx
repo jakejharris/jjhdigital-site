@@ -2,7 +2,7 @@ import { ImageResponse } from 'next/og';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { site } from '@/lib/site';
-import { homepagePalettes, defaultHomepageStyle } from '@/lib/homepage-design/choices';
+import { homepagePalettes } from '@/lib/homepage-design/choices';
 
 export const alt = `${site.legalName} | ${site.founder.name}`;
 export const size = { width: 1200, height: 630 };
@@ -13,7 +13,7 @@ export default async function OpenGraphImage() {
     readFile(join(process.cwd(), 'app/fonts/cormorant-garamond.ttf')),
     readFile(join(process.cwd(), 'app/fonts/inter-regular.ttf')),
   ]);
-  const palette = homepagePalettes[defaultHomepageStyle.palette];
+  const palette = homepagePalettes[4]; // Carbon keeps the share card dark in every mood.
 
   return new ImageResponse(
     <div style={{
