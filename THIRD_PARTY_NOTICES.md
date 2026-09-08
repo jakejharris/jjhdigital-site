@@ -5,6 +5,8 @@
 
 The bundled Latin WOFF2 files come from Fontsource variable packages 5.3.0.
 The Cormorant Garamond TTF subset used for the social card comes from Google Fonts.
+The social card's Inter TTF is the bundled Latin WOFF2 converted to a static
+400-weight TTF with fonttools; it retains the same OFL license above.
 
 Sources: https://github.com/CatharsisFonts/Cormorant,
 https://github.com/rsms/inter,
