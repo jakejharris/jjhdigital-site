@@ -1,18 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { fontLabCatalog, likedFontNames } from '@/components/font-lab-catalog';
+import { fontLabCatalog } from '@/components/font-lab-catalog';
 
 const previewText = 'JJH DIGITAL LLC';
 const isDevelopment = process.env.NODE_ENV === 'development';
 
-// The full catalog is only proxied for the dev font lab; production only ever
-// needs the curated liked fonts used by the homepage shuffle.
-const allowedFamilies = new Set<string>(
-  isDevelopment ? fontLabCatalog.map((font) => font.name) : likedFontNames
-);
+// The public wordmark uses bundled fonts. Only the development explorer
+// needs access to the larger catalog.
+const allowedFamilies = new Set(fontLabCatalog.map((font) => font.name));
+const cacheControl = 'private, max-age=86400';
 
-const cacheControl = isDevelopment
-  ? 'private, max-age=86400'
-  : 'public, max-age=86400, stale-while-revalidate=604800';
+const fontHeaders = {
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36',
+};
 
 const fontUrlCache = new Map<string, Promise<string>>();
 const fontFileCache = new Map<string, Promise<ArrayBuffer>>();
@@ -32,10 +31,7 @@ function getGoogleFontUrl(family: string) {
   if (cached) return cached;
 
   const request = fetch(googleStylesheetUrl(family), {
-    headers: {
-      'User-Agent':
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/127 Safari/537.36',
-    },
+    headers: fontHeaders,
     signal: AbortSignal.timeout(10_000),
   }).then(async (response) => {
     if (!response.ok) {
@@ -58,7 +54,7 @@ function getFontFile(family: string) {
   if (cached) return cached;
 
   const request = getGoogleFontUrl(family)
-    .then((url) => fetch(url, { signal: AbortSignal.timeout(10_000) }))
+    .then((url) => fetch(url, { headers: fontHeaders, signal: AbortSignal.timeout(10_000) }))
     .then(async (response) => {
       if (!response.ok) {
         throw new Error(`Google Fonts file returned ${response.status}`);
@@ -72,6 +68,7 @@ function getFontFile(family: string) {
 }
 
 export async function GET(request: NextRequest) {
+  if (!isDevelopment) return new NextResponse(null, { status: 404 });
   const family = request.nextUrl.searchParams.get('family');
   const asset = request.nextUrl.searchParams.get('asset');
 

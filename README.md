@@ -2,11 +2,11 @@
 
 JJH DIGITAL's home on the web is a quiet piece of letterhead with a playful streak. It says who we are, makes it easy to say hello, and lets a tap change the mood.
 
-Big type. Plenty of air. A fun surprise. Small page, good company.
+Big type. Plenty of air. Six moods.
 
 ## Play
 
-Tap the wordmark or press Space to shuffle. Shift + Space goes back. Tap the email to copy it. The style lab appears only in development.
+Tap the wordmark or press Space to shuffle. Shift + Space or the undo arrow goes back. Tap the email to copy it. The style lab appears only in development.
 
 ## Run
 
@@ -30,6 +30,6 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
-`npm run build` and `npm start` serve the production site. Base fonts are bundled; shuffle fonts arrive through a Google Fonts proxy.
+`npm run build` and `npm start` serve the production site. All public fonts are bundled. Only the development lab uses Google Fonts.
 
 MIT code. Font credits in `THIRD_PARTY_NOTICES.md`. Forks: bring your own name, words, and personality.

@@ -13,10 +13,7 @@ import {
   type WordmarkController,
 } from '@/components/wordmark-shared';
 import {
-  emailTreatments,
   homepagePalettes,
-  iconTreatments,
-  llcTreatments,
   surfaceTreatments,
 } from '@/lib/homepage-design/choices';
 
@@ -70,9 +67,6 @@ export default function StyleLab({ controller }: StyleLabProps) {
   const selectedFont = visibleFonts[selectedIndex];
 
   const palette = homepagePalettes[style.palette];
-  const emailTreatment = emailTreatments[style.email];
-  const llcTreatment = llcTreatments[style.llc];
-  const iconTreatment = iconTreatments[style.icon];
   const surfaceTreatment = surfaceTreatments[style.surface];
 
   // Prefetch the fonts on either side of the selection so wheel browsing
@@ -179,9 +173,6 @@ export default function StyleLab({ controller }: StyleLabProps) {
       <div className="mb-2 flex flex-wrap gap-1 px-1" aria-label="Current style choices">
         {[
           { key: 'palette', label: palette.name },
-          { key: 'email', label: emailTreatment.name },
-          { key: 'llc', label: llcTreatment.name },
-          { key: 'icon', label: iconTreatment },
           { key: 'surface', label: surfaceTreatment.name },
         ].map((choice) => (
           <span

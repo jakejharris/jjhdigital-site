@@ -1,20 +1,256 @@
 @import 'tailwindcss';
-
 @layer base {
   body {
     margin: 0;
-    background: var(--homepage-background, #fff);
-    color: var(--homepage-ink, #0a0a0a);
+    background: var(--homepage-background, #f6f4ee);
+    color: var(--homepage-ink, #292722);
   }
-
   button {
     cursor: pointer;
   }
+  button, a {
+    -webkit-tap-highlight-color: transparent;
+  }
+  button:focus-visible, a:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 8px;
+  }
+  ::selection {
+    color: var(--homepage-background);
+    background: var(--homepage-ink);
+  }
+}
 
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
-      animation-duration: 0.01ms !important;
-      transition-duration: 0.01ms !important;
-    }
+.letterhead {
+  display: flex;
+  min-height: 100dvh;
+  padding: 64px;
+  background-color: var(--homepage-background, #f6f4ee);
+  background-image: var(--homepage-surface-image, none);
+  background-size: var(--homepage-surface-size, auto);
+}
+
+.letterhead-content {
+  width: 100%;
+  max-width: 1024px;
+  min-width: 0;
+  margin: auto;
+}
+
+.wordmark {
+  display: flex;
+  width: 100%;
+  height: clamp(88px, 11vw, 152px);
+  align-items: flex-end;
+  text-align: left;
+  font-weight: 400;
+  color: var(--homepage-ink);
+  touch-action: manipulation;
+  user-select: none;
+}
+
+.wordmark-type {
+  display: block;
+  width: max-content;
+  max-width: 100%;
+  font-size: clamp(64px, 12vw, 172px);
+  line-height: .82;
+  letter-spacing: var(--homepage-wordmark-tracking, -.045em);
+  white-space: nowrap;
+  transform-origin: bottom left;
+}
+
+.wordmark-type > span {
+  display: inline-block;
+}
+
+.wordmark:active .wordmark-type {
+  transform: translateY(2px);
+}
+
+.masthead-caption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 24px;
+  color: var(--homepage-body);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.masthead-caption > span {
+  letter-spacing: .08em;
+}
+
+.mood-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mood-controls button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  color: inherit;
+  touch-action: manipulation;
+}
+
+.mood-change {
+  gap: 8px;
+}
+
+.mood-change:hover {
+  color: var(--homepage-ink);
+}
+
+.mood-change:hover svg {
+  transform: rotate(12deg);
+}
+
+.mood-undo {
+  width: 44px;
+  border-radius: 50%;
+}
+
+.mood-undo:disabled {
+  visibility: hidden;
+}
+
+.mood-undo:hover {
+  background: var(--homepage-ink);
+  color: var(--homepage-background);
+}
+
+.mood-controls button:active {
+  transform: translateY(2px);
+}
+
+.letterhead-note {
+  max-width: 52ch;
+  margin-top: 64px;
+}
+
+.letterhead-note p {
+  font-size: 16px;
+  line-height: 1.6;
+  letter-spacing: -.01em;
+  color: var(--homepage-body);
+  text-wrap: pretty;
+}
+
+.letterhead-contact {
+  margin-top: 24px;
+}
+
+.homepage-email-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 8px 0;
+  color: var(--homepage-ink);
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: -.01em;
+  border-bottom: 1px solid currentColor;
+  touch-action: manipulation;
+}
+
+.homepage-email-button:hover {
+  color: var(--homepage-accent);
+}
+
+.homepage-email-button:active {
+  transform: translateY(2px);
+}
+
+.email-icon {
+  position: relative;
+  width: 16px;
+  height: 16px;
+}
+
+.email-icon svg {
+  position: absolute;
+  inset: 0;
+}
+
+.email-icon .copy-check {
+  opacity: 0;
+  transform: translateY(4px);
+}
+
+.homepage-email-button[data-copied='true'] .copy-glyph {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+.homepage-email-button[data-copied='true'] .copy-check {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.email-feedback {
+  min-height: 44px;
+  margin-top: 8px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--homepage-body);
+}
+
+.email-feedback a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+@media (max-width: 639px) {
+  .letterhead {
+    padding: 24px;
+  }
+  .wordmark {
+    height: calc((100vw - 48px) * .55);
+    max-height: 304px;
+  }
+  .wordmark-type {
+    font-size: calc((100vw - 48px) * .265);
+    line-height: .95;
+    white-space: normal;
+  }
+  .wordmark-type > span {
+    display: block;
+    width: max-content;
+  }
+  .masthead-caption {
+    gap: 8px;
+  }
+  .letterhead-note {
+    max-width: none;
+    margin-top: 24px;
+  }
+  .letterhead-note p {
+    font-size: 18px;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .wordmark-type, .mood-controls button, .mood-change svg, .homepage-email-button, .email-icon svg {
+    transition: transform 160ms ease-out, opacity 160ms ease-out;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  .wordmark:active .wordmark-type, .mood-controls button:active, .homepage-email-button:active, .mood-change:hover svg {
+    transform: none;
   }
 }
