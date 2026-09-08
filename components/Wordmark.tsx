@@ -1,8 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
+import { useCallback, useEffect, useRef, useState, type CSSProperties, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import dynamic from 'next/dynamic';
-import { RotateCcw, Shuffle } from 'lucide-react';
+import { RotateCcw } from 'lucide-react';
 import type { FontLabFont } from '@/components/font-lab-catalog';
 import {
   defaultFontName, fontFamily, likedFonts, loadedFontNames, loadWordmarkFont,
@@ -23,11 +23,11 @@ export default function Wordmark({ baseFontClassName }: { baseFontClassName: str
   const [design, setDesign] = useState(initialDesign);
   const [selectedFontName, setSelectedFontName] = useState(defaultFontName);
   const [loadState, setLoadState] = useState<FontLoadState>('ready');
-  const [canUndo, setCanUndo] = useState(false);
+  const [turns, setTurns] = useState(0);
   const [announcement, setAnnouncement] = useState('');
   const wordmarkRef = useRef<HTMLButtonElement>(null);
   const typeRef = useRef<HTMLSpanElement>(null);
-  const undoRef = useRef<HTMLButtonElement>(null);
+  const llcRef = useRef<HTMLSpanElement>(null);
   const undoSpace = useRef(false);
   const current = useRef(initialDesign);
   const request = useRef(0);
@@ -37,6 +37,7 @@ export default function Wordmark({ baseFontClassName }: { baseFontClassName: str
   const palette = homepagePalettes[design.style.palette];
   const surface = surfaceTreatments[design.style.surface];
   const font = likedFonts.find((candidate) => candidate.name === design.fontName) ?? previewFonts.current.get(design.fontName);
+  const displayFamily = design.fontName !== defaultFontName && font ? fontFamily(font) : undefined;
 
   const showDesign = useCallback((snapshot: DesignSnapshot, action: 'push' | 'back' | 'reset' | 'preview') => {
     const id = ++request.current;
@@ -48,7 +49,6 @@ export default function Wordmark({ baseFontClassName }: { baseFontClassName: str
       if (action === 'push') history.current.push(snapshot);
       setDesign(snapshot);
       setLoadState('ready');
-      setCanUndo(history.current.canGoBack);
       const mood = homepageMoods.find((item) => item.fontName === snapshot.fontName);
       setAnnouncement(`${mood?.name ?? snapshot.fontName} style${action === 'back' ? ' restored' : ''}.`);
     }
@@ -66,12 +66,13 @@ export default function Wordmark({ baseFontClassName }: { baseFontClassName: str
   }, []);
 
   const shuffle = useCallback(() => {
+    setTurns((value) => value + 1);
     showDesign(nextHomepageMood(current.current.fontName), 'push');
   }, [showDesign]);
   const undo = useCallback(() => {
     // Cancel an in-flight selection before walking back through visible moods.
     const snapshot = history.current.back();
-    if (!history.current.canGoBack && document.activeElement === undoRef.current) wordmarkRef.current?.focus();
+    if (snapshot) setTurns((value) => value - 1);
     showDesign(snapshot ?? history.current.current, 'back');
   }, [showDesign]);
   const resetDesign = useCallback(() => { showDesign(history.current.reset(), 'reset'); }, [showDesign]);
@@ -120,13 +121,12 @@ export default function Wordmark({ baseFontClassName }: { baseFontClassName: str
   }, [design]);
 
   useEffect(() => {
-    const type = typeRef.current;
-    if (design === initialDesign || !type || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const animation = type.animate(
+    if (design === initialDesign || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const animations = [typeRef.current, llcRef.current].map((element) => element?.animate(
       [{ transform: 'translateY(4px)', opacity: 0.8 }, { transform: 'translateY(0)', opacity: 1 }],
       { duration: 220, easing: 'cubic-bezier(.2,.7,.2,1)' }
-    );
-    return () => animation.cancel();
+    ));
+    return () => animations.forEach((animation) => animation?.cancel());
   }, [design]);
 
   useEffect(() => {
@@ -180,24 +180,35 @@ export default function Wordmark({ baseFontClassName }: { baseFontClassName: str
             onKeyDown={onShuffleKeyDown}
             onKeyUp={onShuffleKeyUp}
           >
-            <span ref={typeRef} className="wordmark-type" style={{ fontFamily: design.fontName !== defaultFontName && font ? fontFamily(font) : undefined }}>
+            <span ref={typeRef} className="wordmark-type" style={{ fontFamily: displayFamily }}>
               <span>JJH</span>{' '}<span>DIGITAL</span>
             </span>
           </button>
         </h1>
         <div className="masthead-caption">
-          <span aria-hidden="true">LLC</span>
+          <span ref={llcRef} className={`wordmark-llc ${baseFontClassName}`} style={{ fontFamily: displayFamily }} aria-hidden="true">LLC</span>
           <div className="mood-controls">
-            <button type="button" className="mood-change" onClick={shuffle} onKeyDown={onShuffleKeyDown} onKeyUp={onShuffleKeyUp} aria-label="Change the mood" aria-keyshortcuts="Space">
-              <Shuffle size={13} aria-hidden="true" />
-              <span id="shuffle-hint">{loadState === 'error' ? 'Try another mood' : 'Change the mood'}</span>
+            <button
+              type="button"
+              className="mood-rotate"
+              onClick={shuffle}
+              onKeyDown={onShuffleKeyDown}
+              onKeyUp={onShuffleKeyUp}
+              aria-label="Next style"
+              aria-describedby="shuffle-hint"
+              aria-keyshortcuts="Space Shift+Space"
+              aria-busy={loadState === 'loading'}
+              title="Next style · Shift + Space to undo"
+            >
+              <span className="mood-rotate-glyph" style={{ '--mood-turn': `${turns * -360}deg` } as CSSProperties}>
+                <RotateCcw className="mood-rotate-icon" size={20} strokeWidth={1.5} aria-hidden="true" />
+              </span>
             </button>
-            <button ref={undoRef} type="button" className="mood-undo" onClick={undo} disabled={!canUndo} aria-label="Previous style" aria-keyshortcuts="Shift+Space" title="Previous style · Shift + Space">
-              <RotateCcw size={16} aria-hidden="true" />
-            </button>
+            {loadState === 'error' && <span className="mood-error">Style unavailable. Try again.</span>}
           </div>
         </div>
       </div>
+      <span id="shuffle-hint" className="sr-only">Tap or press Space to shuffle. Shift + Space goes back.</span>
       <span className="sr-only" role="status" aria-label="Style" aria-live="polite">{announcement}</span>
       {StyleLab && <StyleLab controller={{ selectedFontName, loadState, style: design.style, selectFont, resetDesign }} />}
     </>

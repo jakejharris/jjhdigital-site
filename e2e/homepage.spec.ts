@@ -4,6 +4,7 @@ const fonts = ['Work Sans', 'Gloock', 'Unbounded', 'Monoton', 'Bebas Neue'];
 const moodColors = ['#1738cd', '#f1e6dc', '#e8ece3', '#252522', '#f3cf61'];
 const type = (page: Page) => page.locator('.wordmark-type');
 const shuffle = (page: Page) => page.getByRole('button', { name: 'Shuffle the style' });
+const rotate = (page: Page) => page.getByRole('button', { name: 'Next style' });
 
 async function paper(page: Page) {
   return page.locator('html').evaluate((el) => getComputedStyle(el).getPropertyValue('--homepage-background').trim());
@@ -33,7 +34,7 @@ for (const width of [320, 321, 390, 639, 640, 768, 1440]) {
   test.describe(`${width}px`, () => {
     test.use({ viewport: { width, height: 900 }, hasTouch: width < 1000 });
 
-    test('all moods fit and leave the reading layout still; touch and keyboard undo restore the original', async ({ page }) => {
+    test('wordmark and rotation control change the whole masthead without moving the reading layout; keyboard undo restores it', async ({ page }) => {
       const errors: string[] = [];
       page.on('pageerror', (error) => errors.push(error.message));
       page.on('console', (message) => { if (message.type() === 'error') errors.push(message.text()); });
@@ -49,24 +50,32 @@ for (const width of [320, 321, 390, 639, 640, 768, 1440]) {
       const initialPaper = await paper(page);
       const initialType = await type(page).evaluate((el) => getComputedStyle(el).fontFamily);
       const originalBox = await noteBox(page);
+      const llc = page.locator('.wordmark-llc');
+      await expect(llc).toHaveCSS('font-family', initialType);
+      expect(await llc.evaluate((el) => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(28);
+      await expect(page.locator('.mood-controls button')).toHaveCount(1);
+      await expect(page.getByText('Change the mood', { exact: true })).toHaveCount(0);
+      expect((await rotate(page).boundingBox())!.width).toBeGreaterThanOrEqual(44);
+      expect((await rotate(page).boundingBox())!.height).toBeGreaterThanOrEqual(44);
 
       for (const [index, font] of fonts.entries()) {
-        if (width < 1000) await shuffle(page).tap();
-        else await shuffle(page).click();
+        const control = index % 2 === 0 ? rotate(page) : shuffle(page);
+        if (width < 1000) await control.tap();
+        else await control.click();
         await expect(type(page)).toHaveCSS('font-family', new RegExp(font));
+        await expect(llc).toHaveCSS('font-family', new RegExp(font));
+        await expect(llc).toHaveCSS('color', await type(page).evaluate((el) => getComputedStyle(el).color));
         expect(await paper(page)).toBe(moodColors[index]);
         await expectFits(page);
         expect(await noteBox(page)).toEqual(originalBox);
       }
 
-      const previous = page.getByRole('button', { name: 'Previous style' });
-      if (width < 1000) await previous.tap();
-      else await previous.click();
+      await rotate(page).press('Shift+Space');
       await expect(type(page)).toHaveCSS('font-family', /Monoton/);
       for (let i = 0; i < fonts.length - 1; i++) await shuffle(page).press('Shift+Space');
       expect(await paper(page)).toBe(initialPaper);
       await expect(type(page)).toHaveCSS('font-family', initialType);
-      await expect(previous).toHaveCount(0);
+      await expect(llc).toHaveCSS('font-family', initialType);
       await expectFits(page);
       expect(await noteBox(page)).toEqual(originalBox);
       expect(errors).toEqual([]);
@@ -112,6 +121,7 @@ test('first visit is legible and contact works without JavaScript or loaded font
 });
 
 test('failed font keeps the complete current mood; another choice still works', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 812 });
   await page.route('**/fonts/work-sans-wordmark.woff2', (route) => route.abort());
   await page.goto('/');
   await page.waitForFunction(() => [...document.fonts].some((face) => face.family === 'Gloock' && face.status === 'loaded'));
@@ -119,12 +129,18 @@ test('failed font keeps the complete current mood; another choice still works', 
   const before = await type(page).evaluate((el) => getComputedStyle(el).fontFamily);
   const initialPaper = await paper(page);
   await shuffle(page).click();
-  await expect(page.getByText('Try another mood', { exact: true })).toBeVisible();
+  await expect(page.getByText('Style unavailable. Try again.', { exact: true })).toBeVisible();
+  const errorBox = (await page.locator('.mood-error').boundingBox())!;
+  const llcBox = (await page.locator('.wordmark-llc').boundingBox())!;
+  const controlBox = (await rotate(page).boundingBox())!;
+  expect(errorBox.x).toBeGreaterThan(llcBox.x + llcBox.width);
+  expect(errorBox.x + errorBox.width).toBeLessThan(controlBox.x);
+  expect(errorBox.y + errorBox.height).toBeLessThan((await noteBox(page))!.y);
   await expect(type(page)).toHaveCSS('font-family', before);
   expect(await paper(page)).toBe(initialPaper);
   await shuffle(page).click();
   await expect(type(page)).toHaveCSS('font-family', /Gloock/);
-  await page.getByRole('button', { name: 'Previous style' }).click();
+  await rotate(page).press('Shift+Space');
   expect(await paper(page)).toBe(initialPaper);
   await expectFits(page);
 });
@@ -171,9 +187,11 @@ test('Space shortcuts respect focus and reduced motion', async ({ page }) => {
   await expect(type(page)).toHaveCSS('font-family', /Work Sans/);
   await shuffle(page).press('Shift+Space');
   expect(await paper(page)).toBe(initialPaper);
-  const change = page.getByRole('button', { name: 'Change the mood', exact: true });
+  const change = rotate(page);
   await change.press('Space');
   await expect(type(page)).toHaveCSS('font-family', /Work Sans/);
+  await expect(page.locator('.mood-rotate-glyph')).toHaveCSS('transform', 'none');
+  expect(await page.locator('.masthead').evaluate((el) => el.getAnimations({ subtree: true }).length)).toBe(0);
   await page.keyboard.down('Shift');
   await page.keyboard.down('Space');
   await page.keyboard.up('Shift');

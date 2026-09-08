@@ -6,7 +6,7 @@ Big type. Plenty of air. Six moods.
 
 ## Play
 
-Tap the wordmark or press Space to shuffle. Shift + Space or the undo arrow goes back. Tap the email to copy it. The style lab appears only in development.
+Tap the wordmark or rotation icon, or press Space to shuffle. Shift + Space goes back. Tap the email to copy it. The style lab appears only in development.
 
 ## Run
 

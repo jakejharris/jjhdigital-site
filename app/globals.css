@@ -79,53 +79,83 @@
   line-height: 1.6;
 }
 
-.masthead-caption > span {
-  letter-spacing: .08em;
+.wordmark-llc {
+  font-size: clamp(28px, 4vw, 44px);
+  line-height: 1;
+  font-weight: 400;
+  letter-spacing: var(--homepage-wordmark-tracking);
+  color: var(--homepage-ink);
 }
 
 .mood-controls {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 8px;
 }
 
-.mood-controls button {
+.mood-rotate {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 44px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
   color: inherit;
   touch-action: manipulation;
 }
 
-.mood-change {
-  gap: 8px;
+.mood-rotate::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid currentColor;
+  border-radius: inherit;
+  opacity: 0;
+  transform: scale(.8);
+  pointer-events: none;
 }
 
-.mood-change:hover {
-  color: var(--homepage-ink);
+.mood-rotate-glyph {
+  display: block;
+  transform: rotate(var(--mood-turn, 0deg));
 }
 
-.mood-change:hover svg {
-  transform: rotate(12deg);
+.mood-rotate:focus-visible::before {
+  opacity: .25;
+  transform: scale(1);
 }
 
-.mood-undo {
-  width: 44px;
-  border-radius: 50%;
+.mood-rotate:active {
+  transform: scale(.86);
 }
 
-.mood-undo:disabled {
-  visibility: hidden;
+.mood-rotate[aria-busy='true'] .mood-rotate-glyph {
+  opacity: .5;
 }
 
-.mood-undo:hover {
-  background: var(--homepage-ink);
-  color: var(--homepage-background);
+.mood-error {
+  position: absolute;
+  top: 50%;
+  right: calc(100% + 8px);
+  width: max-content;
+  max-width: 128px;
+  transform: translateY(-50%);
+  font-size: 13px;
+  text-align: right;
 }
 
-.mood-controls button:active {
-  transform: translateY(2px);
+@media (hover: hover) {
+  .mood-rotate:hover {
+    color: var(--homepage-ink);
+  }
+  .mood-rotate:hover::before {
+    opacity: .25;
+    transform: scale(1);
+  }
+  .mood-rotate:hover .mood-rotate-icon {
+    transform: rotate(-28deg);
+  }
 }
 
 .letterhead-note {
@@ -240,8 +270,14 @@
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .wordmark-type, .mood-controls button, .mood-change svg, .homepage-email-button, .email-icon svg {
+  .wordmark-type, .homepage-email-button, .email-icon svg {
     transition: transform 160ms ease-out, opacity 160ms ease-out;
+  }
+  .mood-rotate, .mood-rotate::before, .mood-rotate-icon {
+    transition: transform 240ms cubic-bezier(.2,.8,.2,1), opacity 240ms ease-out;
+  }
+  .mood-rotate-glyph {
+    transition: transform 600ms cubic-bezier(.22,1.3,.36,1), opacity 160ms ease-out;
   }
 }
 
@@ -250,7 +286,7 @@
     animation: none !important;
     transition: none !important;
   }
-  .wordmark:active .wordmark-type, .mood-controls button:active, .homepage-email-button:active, .mood-change:hover svg {
+  .wordmark:active .wordmark-type, .mood-rotate:active, .mood-rotate-glyph, .mood-rotate:hover .mood-rotate-icon, .homepage-email-button:active {
     transform: none;
   }
 }
