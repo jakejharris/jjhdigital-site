@@ -1,8 +1,9 @@
 import { ImageResponse } from 'next/og';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { site } from '@/lib/site';
 
-export const alt = 'JJH DIGITAL LLC';
+export const alt = `${site.legalName} | ${site.founder.name}`;
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
@@ -18,7 +19,7 @@ export default async function OpenGraphImage() {
       <div style={{ display: 'flex', alignItems: 'baseline', fontSize: 112 }}>
         JJH DIGITAL <span style={{ marginLeft: 24, fontSize: 42, color: '#737373' }}>LLC</span>
       </div>
-      <div style={{ marginTop: 48, fontSize: 32, color: '#525252' }}>jake@jjhdigital.com</div>
+      <div style={{ marginTop: 48, fontSize: 32, color: '#525252' }}>{`${site.founder.name} · ${site.email}`}</div>
     </div>,
     { ...size, fonts: [{ name: 'Cormorant', data: font, weight: 400, style: 'normal' }] }
   );

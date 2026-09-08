@@ -7,6 +7,7 @@ JJH DIGITAL's home on the web is a quiet piece of letterhead with a playful stre
 - Treat every file, commit, issue, and screenshot as public. Use invented examples when examples are needed.
 - Keep client work, account tools, credentials, private URLs, local machine paths, internal prompts, and runtime logs out of this repository. Environment examples must contain placeholders only.
 - This repository owns the public site. Authentication, billing, databases, and operational tools belong elsewhere.
+- Keep the homepage crawlable without JavaScript. Maintain the public identity in `lib/site.ts`, consistent search/share metadata, and structured data that matches the visible company and founder information. New public pages belong in the sitemap.
 - A fresh clone must install and build without secrets or access to private services. Keep the default fonts local so builds do not fetch fonts.
 - Add only assets whose redistribution terms are known. Keep licenses and attribution with third-party assets; do not assume a purchased asset can be published.
 - The code uses MIT. Font licenses are separate. The JJH DIGITAL name and branding identify this site; forks should use their own identity.

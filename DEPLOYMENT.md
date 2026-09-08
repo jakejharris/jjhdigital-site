@@ -53,3 +53,15 @@ Check the live homepage, shuffle, email copy, favicon, `/robots.txt`,
 must not be available in production. Confirm www redirects to the canonical
 address. Before a manual release, record the previous production URL; use
 `npx vercel@latest rollback <previous-production-url>` if the release fails.
+
+## Search indexing
+
+The homepage includes crawlable company and founder copy, search/share
+metadata, and Organization, Person, and WebSite structured data. Public
+identity lives in `lib/site.ts`; keep it consistent with the visible copy.
+
+In the verified Google Search Console property, submit
+`https://jjhdigital.com/sitemap.xml` and request homepage indexing after
+substantial content changes. Use its Performance report to track JJH DIGITAL,
+JJH DIGITAL LLC, and Jake Harris. Deployment checks verify crawlability;
+indexing and rankings depend on search engines.

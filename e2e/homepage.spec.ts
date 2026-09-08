@@ -52,7 +52,7 @@ for (const width of [320, 321, 390, 639, 640, 768, 1440]) {
       const response = await page.goto('/');
       expect(response?.status()).toBe(200);
       expect(response?.headers()['content-security-policy']).toContain("default-src 'self'");
-      await expect(page).toHaveTitle('JJH DIGITAL LLC');
+      await expect(page).toHaveTitle('JJH DIGITAL LLC | Jake Harris');
       await expect(page.getByRole('heading', { name: 'JJH DIGITAL LLC' })).toBeVisible();
       await expect(page.getByText('Local style lab')).toHaveCount(0);
       await warmFonts(page);
