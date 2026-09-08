@@ -175,6 +175,11 @@
   text-wrap: pretty;
 }
 
+.letterhead-note p a {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
 .letterhead-contact {
   margin-top: 24px;
 }

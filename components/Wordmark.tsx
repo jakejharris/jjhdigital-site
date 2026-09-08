@@ -175,7 +175,11 @@ export default function Wordmark({ baseFontClassName }: { baseFontClassName: str
             aria-label="Shuffle the style"
             aria-describedby="shuffle-hint"
             aria-busy={loadState === 'loading'}
-            onClick={shuffle}
+            onClick={(event) => {
+              // Release pointer focus before a later Space shortcut can outline the masthead.
+              if (event.detail > 0) event.currentTarget.blur();
+              shuffle();
+            }}
             onKeyDown={onShuffleKeyDown}
             onKeyUp={onShuffleKeyUp}
           >

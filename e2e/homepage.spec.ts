@@ -52,7 +52,7 @@ for (const width of [320, 321, 390, 639, 640, 768, 1440]) {
       const response = await page.goto('/');
       expect(response?.status()).toBe(200);
       expect(response?.headers()['content-security-policy']).toContain("default-src 'self'");
-      await expect(page).toHaveTitle('JJH DIGITAL LLC');
+      await expect(page).toHaveTitle('JJH DIGITAL LLC | Jake Harris');
       await expect(page.getByRole('heading', { name: 'JJH DIGITAL LLC' })).toBeVisible();
       await expect(page.getByText('Local style lab')).toHaveCount(0);
       await warmFonts(page);
@@ -96,6 +96,31 @@ for (const width of [320, 321, 390, 639, 640, 768, 1440]) {
     });
   });
 }
+
+test.describe('pointer and keyboard shuffle', () => {
+  test.use({ hasTouch: true, viewport: { width: 390, height: 844 } });
+
+  test('repeated clicks and taps followed by Space leave no box around the wordmark', async ({ page }) => {
+    await page.goto('/');
+    await warmFonts(page);
+    await page.evaluate(() => { Math.random = () => 0; });
+
+    for (const input of ['mouse', 'touch']) {
+      if (input === 'mouse') await shuffle(page).click({ clickCount: 5, delay: 20 });
+      else for (let i = 0; i < 5; i++) await shuffle(page).tap();
+      await expect(shuffle(page)).not.toBeFocused();
+      await expect(shuffle(page)).toHaveCSS('outline-style', 'none');
+
+      const before = await type(page).evaluate((el) => getComputedStyle(el).fontFamily);
+      await page.keyboard.press('Space');
+      await expect(type(page)).not.toHaveCSS('font-family', before);
+      await expect(shuffle(page)).toHaveCSS('outline-style', 'none');
+      await page.keyboard.press('Shift+Space');
+      await expect(type(page)).toHaveCSS('font-family', before);
+      await expect(shuffle(page)).toHaveCSS('outline-style', 'none');
+    }
+  });
+});
 
 test('contact copies, announces success, and leaves the letterhead in place', async ({ page, context }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
@@ -199,6 +224,8 @@ test('Space shortcuts respect focus and reduced motion', async ({ page }) => {
   await expect(shuffle(page)).toHaveCSS('outline-style', 'solid');
   await shuffle(page).press('Space');
   await expect(type(page)).toHaveCSS('font-family', /Work Sans/);
+  await expect(shuffle(page)).toBeFocused();
+  await expect(shuffle(page)).toHaveCSS('outline-style', 'solid');
   await shuffle(page).press('Shift+Space');
   expect(await paper(page)).toBe(initialPaper);
   const change = rotate(page);
