@@ -1,0 +1,20 @@
+@import 'tailwindcss';
+
+@layer base {
+  body {
+    margin: 0;
+    background: var(--homepage-background, #fff);
+    color: var(--homepage-ink, #0a0a0a);
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
