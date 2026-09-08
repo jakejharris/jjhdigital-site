@@ -11,8 +11,19 @@ https://github.com/rsms/inter,
 https://github.com/google/fonts/tree/main/ofl/cormorantgaramond,
 https://fontsource.org/.
 
-Additional shuffle fonts are served at runtime through Google Fonts. Their
-upstream licenses apply; this repository does not redistribute those files.
+The public shuffle also bundles Google Fonts WOFF2 subsets containing only
+`JJH DIGITAL LLC`, fetched from the Google Fonts CSS API. Each is licensed
+under SIL Open Font License 1.1; the original copyright and complete license
+are included beside the font in `public/fonts/`:
+
+- [Work Sans](https://github.com/google/fonts/tree/main/ofl/worksans), the Work Sans Project Authors: `work-sans-OFL.txt`.
+- [Gloock](https://github.com/google/fonts/tree/main/ofl/gloock), the Gloock Project Authors: `gloock-OFL.txt`.
+- [Unbounded](https://github.com/google/fonts/tree/main/ofl/unbounded), the Unbounded Project Authors: `unbounded-OFL.txt`.
+- [Monoton](https://github.com/google/fonts/tree/main/ofl/monoton), Vernon Adams: `monoton-OFL.txt`.
+- [Bebas Neue](https://github.com/google/fonts/tree/main/ofl/bebasneue), Dharma Type: `bebas-neue-OFL.txt`.
+
+The development-only font explorer can request other faces from Google
+Fonts. Those additional files are not redistributed in this repository.
 Lucide icons are provided by the `lucide-react` dependency under its ISC license.
 
 The MIT license covers this repository's code. Third-party assets retain their

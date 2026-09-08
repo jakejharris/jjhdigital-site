@@ -1,12 +1,3 @@
-export const likedFontNames = [
-  'Rubik',
-  'Work Sans',
-  'Bebas Neue',
-  'Unbounded',
-  'Monoton',
-  'Gloock',
-] as const;
-
 export type FontLabCategory = 'Serif' | 'Sans' | 'Display' | 'Mono' | 'Script';
 
 export type FontLabFont = {

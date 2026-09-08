@@ -15,6 +15,8 @@ const csp = [
 ].join('; ');
 
 const nextConfig: NextConfig = {
+  // Starting a preview should not rewrite the repository-owned AGENTS.md.
+  agentRules: false,
   poweredByHeader: false,
   async headers() {
     return [{

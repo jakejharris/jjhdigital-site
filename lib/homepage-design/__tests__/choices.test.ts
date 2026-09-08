@@ -1,102 +1,42 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import {
-  defaultHomepageStyle,
-  emailTreatments,
-  homepagePalettes,
-  iconTreatments,
-  llcTreatments,
-  randomizeHomepageStyle,
-  surfaceTreatments,
-  wordmarkTracking,
-  type HomepageStyleSelection,
-} from '../choices';
+import { describe, expect, it } from 'vitest';
+import { homepageMoods, homepagePalettes, nextHomepageMood } from '../choices';
 
-const axes: Array<{ key: keyof HomepageStyleSelection; length: number }> = [
-  { key: 'palette', length: homepagePalettes.length },
-  { key: 'email', length: emailTreatments.length },
-  { key: 'llc', length: llcTreatments.length },
-  { key: 'icon', length: iconTreatments.length },
-  { key: 'tracking', length: wordmarkTracking.length },
-  { key: 'surface', length: surfaceTreatments.length },
-];
-
-const noneIcon = iconTreatments.indexOf('None');
-
-function every<T>(count: number, make: (index: number) => T): T[] {
-  return Array.from({ length: count }, (_, index) => make(index));
+function luminance(hex: string) {
+  const channels = hex.slice(1).match(/../g)!.map((channel) => {
+    const value = parseInt(channel, 16) / 255;
+    return value <= .04045 ? value / 12.92 : ((value + .055) / 1.055) ** 2.4;
+  });
+  return channels[0] * .2126 + channels[1] * .7152 + channels[2] * .0722;
+}
+function contrast(a: string, b: string) {
+  const values = [luminance(a), luminance(b)].sort((x, y) => y - x);
+  return (values[0] + .05) / (values[1] + .05);
 }
 
-describe('randomizeHomepageStyle', () => {
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
-  it('never returns the current index on any axis', () => {
-    let current = defaultHomepageStyle;
-    for (let round = 0; round < 500; round += 1) {
-      const next = randomizeHomepageStyle(current);
-      for (const axis of axes) {
-        expect(next[axis.key], `${axis.key} repeated on round ${round}`).not.toBe(current[axis.key]);
-      }
-      current = next;
-    }
-  });
-
-  it('keeps every index inside its axis', () => {
-    let current = defaultHomepageStyle;
-    for (let round = 0; round < 500; round += 1) {
-      current = randomizeHomepageStyle(current);
-      for (const axis of axes) {
-        expect(Number.isInteger(current[axis.key])).toBe(true);
-        expect(current[axis.key]).toBeGreaterThanOrEqual(0);
-        expect(current[axis.key]).toBeLessThan(axis.length);
-      }
-    }
-  });
-
-  it('never rolls the None icon, from any starting icon', () => {
-    for (let start = 0; start < iconTreatments.length; start += 1) {
-      const rolled = every(300, () =>
-        randomizeHomepageStyle({ ...defaultHomepageStyle, icon: start }).icon
+describe('complete moods', () => {
+  it('can draw every other mood, and never repeats the current one', () => {
+    for (const current of homepageMoods) {
+      const draws = Array.from({ length: homepageMoods.length - 1 }, (_, n) =>
+        nextHomepageMood(current.fontName, () => n / (homepageMoods.length - 1))
       );
-      expect(rolled).not.toContain(noneIcon);
-      if (start !== noneIcon) expect(rolled).not.toContain(start);
+      expect(new Set(draws).size).toBe(homepageMoods.length - 1);
+      expect(draws).not.toContain(current);
+      expect(draws.every((mood) => homepageMoods.includes(mood))).toBe(true);
     }
   });
 
+  it('returns to the original letterhead, including after lab browsing', () => {
+    const last = homepageMoods.at(-1)!;
+    expect(nextHomepageMood(last.fontName, () => 0)).toBe(homepageMoods[0]);
+    expect(nextHomepageMood('a lab font', () => 0)).toBe(homepageMoods[0]);
+    expect(nextHomepageMood('a lab font', () => .999999)).toBe(last);
+  });
 
-  it('can reach every other index on an axis', () => {
-    for (const axis of axes) {
-      if (axis.key === 'icon') continue;
-      const seen = new Set(
-        every(2000, () => randomizeHomepageStyle(defaultHomepageStyle)[axis.key])
-      );
-      for (let index = 0; index < axis.length; index += 1) {
-        if (index === defaultHomepageStyle[axis.key]) continue;
-        expect(seen.has(index), `${axis.key} never reached ${index}`).toBe(true);
+  it('keeps all readable inks and contact hover states above AA contrast', () => {
+    for (const palette of homepagePalettes) {
+      for (const ink of ['ink', 'body', 'accent'] as const) {
+        expect(contrast(palette[ink], palette.background), `${palette.name}: ${ink}`).toBeGreaterThanOrEqual(4.5);
       }
     }
-  });
-
-  it('wraps at the extremes of the random range without landing on the current index', () => {
-    const start = { palette: 2, email: 1, llc: 4, icon: 0, tracking: 3, surface: 2 };
-
-    vi.spyOn(Math, 'random').mockReturnValue(0);
-    const low = randomizeHomepageStyle(start);
-    for (const axis of axes) expect(low[axis.key]).not.toBe(start[axis.key]);
-
-    vi.spyOn(Math, 'random').mockReturnValue(0.999999);
-    const high = randomizeHomepageStyle(start);
-    for (const axis of axes) {
-      expect(high[axis.key]).not.toBe(start[axis.key]);
-      expect(high[axis.key]).toBeLessThan(axis.length);
-    }
-    expect(high.icon).not.toBe(noneIcon);
-  });
-
-  it('does not mutate the current selection', () => {
-    const current = { ...defaultHomepageStyle };
-    randomizeHomepageStyle(current);
-    expect(current).toEqual(defaultHomepageStyle);
   });
 });
