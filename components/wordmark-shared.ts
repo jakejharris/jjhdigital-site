@@ -1,11 +1,11 @@
 import { useEffect, useLayoutEffect } from 'react';
 import type { FontLabFont } from '@/components/font-lab-catalog';
-import { homepageMoods, type HomepageStyleSelection } from '@/lib/homepage-design/choices';
+import { homepageTypefaces, type HomepageStyleSelection } from '@/lib/homepage-design/choices';
+export type { DesignSnapshot } from '@/lib/homepage-design/choices';
 
 export const defaultFontName = 'Cormorant Garamond';
 export const previewText = 'JJH DIGITAL LLC';
 export type FontLoadState = 'ready' | 'loading' | 'error';
-export type DesignSnapshot = { fontName: string; style: HomepageStyleSelection };
 export type WordmarkController = {
   selectedFontName: string;
   loadState: FontLoadState;
@@ -22,7 +22,7 @@ const localFonts: Record<string, string> = {
   'Bebas Neue': '/fonts/bebas-neue-wordmark.woff2',
 };
 
-export const likedFonts: FontLabFont[] = homepageMoods.map(({ fontName }) => ({
+export const likedFonts: FontLabFont[] = homepageTypefaces.map(({ fontName }) => ({
   name: fontName,
   category: fontName === 'Cormorant Garamond' || fontName === 'Gloock' ? 'Serif' : fontName === 'Monoton' ? 'Display' : 'Sans',
 }));

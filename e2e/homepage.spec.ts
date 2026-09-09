@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { homepageMoods, homepagePalettes, surfaceTreatments } from '../lib/homepage-design/choices';
 
 const fonts = ['Work Sans', 'Gloock', 'Unbounded', 'Monoton', 'Bebas Neue'];
 const moodColors = ['#1738cd', '#f1e6dc', '#e8ece3', '#252522', '#f3cf61'];
@@ -41,6 +42,79 @@ async function noteBox(page: Page) {
   return page.locator('.letterhead-note').boundingBox();
 }
 
+async function drawOriginalMoods(page: Page) {
+  let previous = 0;
+  const draws = fonts.map((fontName, index) => {
+    const next = homepageMoods.findIndex((mood) => mood.fontName === fontName &&
+      mood.style.palette === index + 1 && mood.style.surface === (index === 0 ? 1 : 0));
+    const draw = (next - previous - .5) / (homepageMoods.length - 1);
+    previous = next;
+    return draw;
+  });
+  await page.evaluate((values) => { Math.random = () => values.shift() ?? 0; }, draws);
+}
+
+for (const width of [320, 1440]) {
+  test(`all 216 combinations render distinctly at ${width}px and undo restores a same-font variation`, async ({ page }) => {
+    test.setTimeout(120_000);
+    await page.setViewportSize({ width, height: 900 });
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/');
+    await warmFonts(page);
+    await page.evaluate(() => { Math.random = () => 0; });
+    const originalBox = await noteBox(page);
+    const rendered = new Set<string>();
+
+    // The smallest draw steps through the entire catalog, then returns home.
+    for (const [index, mood] of homepageMoods.entries()) {
+      const palette = homepagePalettes[mood.style.palette];
+      const surface = surfaceTreatments[mood.style.surface];
+      const css = await type(page).evaluate((el) => {
+        const root = getComputedStyle(document.documentElement);
+        return {
+          font: getComputedStyle(el).fontFamily,
+          paper: root.getPropertyValue('--homepage-background').trim(),
+          surface: root.getPropertyValue('--homepage-surface-image').trim(),
+          paintedSurface: getComputedStyle(document.querySelector('.letterhead')!).backgroundImage,
+        };
+      });
+      // Next gives the default local font a generated family name.
+      if (mood.fontName !== 'Cormorant Garamond') expect(css.font).toContain(mood.fontName);
+      expect(css.paper).toBe(palette.background);
+      expect(css.surface).toBe(surface.image);
+      expect(css.paintedSurface === 'none').toBe(surface.image === 'none');
+      rendered.add(JSON.stringify(css));
+      await expectFits(page);
+      expect(await noteBox(page)).toEqual(originalBox);
+      await rotate(page).evaluate((button: HTMLButtonElement) => button.click());
+      const next = homepageMoods[(index + 1) % homepageMoods.length];
+      await expect(page.getByRole('status', { name: 'Style' })).toHaveText(
+        `${homepagePalettes[next.style.palette].name}, ${next.fontName}, ${surfaceTreatments[next.style.surface].name}.`
+      );
+    }
+    expect(rendered.size).toBe(216);
+    expect(await paper(page)).toBe('#f6f4ee');
+
+    // Select a different paper while keeping the same face. Undo must use
+    // the full snapshot, not just a font name.
+    const targetIndex = homepageMoods.findIndex((mood) =>
+      mood.fontName === 'Cormorant Garamond' && mood.style.palette === 10 && mood.style.surface === 2
+    );
+    const draw = (targetIndex - .5) / (homepageMoods.length - 1);
+    const originalType = await type(page).evaluate((el) => getComputedStyle(el).fontFamily);
+    await page.evaluate((value) => { Math.random = () => value; }, draw);
+    await rotate(page).click();
+    expect(await paper(page)).toBe('#dceeed');
+    await expect(type(page)).toHaveCSS('font-family', originalType);
+    await expect(page.getByRole('status', { name: 'Style' })).toHaveText('Glacier, Cormorant Garamond, Dot paper.');
+    await rotate(page).press('Shift+Space');
+    expect(await paper(page)).toBe('#f6f4ee');
+    await expect(page.locator('.letterhead')).toHaveCSS('background-image', 'none');
+    await expect(type(page)).toHaveCSS('font-family', originalType);
+    await expect(page.getByRole('status', { name: 'Style' })).toHaveText('Ivory, Cormorant Garamond, Plain restored.');
+  });
+}
+
 for (const width of [320, 321, 390, 639, 640, 768, 1440]) {
   test.describe(`${width}px`, () => {
     test.use({ viewport: { width, height: 900 }, hasTouch: width < 1000 });
@@ -56,7 +130,7 @@ for (const width of [320, 321, 390, 639, 640, 768, 1440]) {
       await expect(page.getByRole('heading', { name: 'JJH DIGITAL LLC' })).toBeVisible();
       await expect(page.getByText('Local style lab')).toHaveCount(0);
       await warmFonts(page);
-      await page.evaluate(() => { Math.random = () => 0; });
+      await drawOriginalMoods(page);
       await expectFits(page);
       const initialPaper = await paper(page);
       const initialType = await type(page).evaluate((el) => getComputedStyle(el).fontFamily);
@@ -164,7 +238,7 @@ test('failed font keeps the complete current mood; another choice still works', 
   await page.route('**/fonts/work-sans-wordmark.woff2', (route) => route.abort());
   await page.goto('/');
   await page.waitForFunction(() => [...document.fonts].some((face) => face.family === 'Gloock' && face.status === 'loaded'));
-  await page.evaluate(() => { Math.random = () => 0; });
+  await drawOriginalMoods(page);
   const before = await type(page).evaluate((el) => getComputedStyle(el).fontFamily);
   const initialPaper = await paper(page);
   await shuffle(page).click();
@@ -190,7 +264,7 @@ test('a slow font never paints half a mood or overwrites a newer choice', async 
   await page.route('**/fonts/work-sans-wordmark.woff2', async (route) => { await gate; await route.continue(); });
   await page.goto('/');
   await page.waitForFunction(() => [...document.fonts].some((face) => face.family === 'Gloock' && face.status === 'loaded'));
-  await page.evaluate(() => { Math.random = () => 0; });
+  await drawOriginalMoods(page);
   const initialPaper = await paper(page);
   const originalType = await type(page).evaluate((el) => getComputedStyle(el).fontFamily);
   await shuffle(page).click();

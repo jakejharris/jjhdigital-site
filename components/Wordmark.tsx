@@ -9,7 +9,7 @@ import {
   useIsomorphicLayoutEffect, type DesignSnapshot, type FontLoadState,
 } from '@/components/wordmark-shared';
 import {
-  defaultHomepageStyle, homepageMoods, homepagePalettes, nextHomepageMood,
+  defaultHomepageStyle, homepagePalettes, nextHomepageMood,
   surfaceTreatments, wordmarkTracking,
 } from '@/lib/homepage-design/choices';
 import { createDesignHistory } from '@/lib/homepage-design/history';
@@ -48,8 +48,8 @@ export default function Wordmark({ baseFontClassName }: { baseFontClassName: str
       if (action === 'push') history.current.push(snapshot);
       setDesign(snapshot);
       setLoadState('ready');
-      const mood = homepageMoods.find((item) => item.fontName === snapshot.fontName);
-      setAnnouncement(`${mood?.name ?? snapshot.fontName} style${action === 'back' ? ' restored' : ''}.`);
+      const name = `${homepagePalettes[snapshot.style.palette].name}, ${snapshot.fontName}, ${surfaceTreatments[snapshot.style.surface].name}`;
+      setAnnouncement(`${name}${action === 'back' ? ' restored' : ''}.`);
     }
 
     if (loadedFontNames.has(snapshot.fontName)) {
@@ -66,7 +66,7 @@ export default function Wordmark({ baseFontClassName }: { baseFontClassName: str
 
   const shuffle = useCallback(() => {
     setTurns((value) => value + 1);
-    showDesign(nextHomepageMood(current.current.fontName), 'push');
+    showDesign(nextHomepageMood(current.current), 'push');
   }, [showDesign]);
   const undo = useCallback(() => {
     // Cancel an in-flight selection before walking back through visible moods.
