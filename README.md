@@ -2,7 +2,7 @@
 
 JJH DIGITAL's home on the web is a quiet piece of letterhead with a playful streak. It says who we are, makes it easy to say hello, and lets a tap change the mood.
 
-Big type. Plenty of air. Six moods.
+Big type. Plenty of air. 216 moods.
 
 ## Play
 
