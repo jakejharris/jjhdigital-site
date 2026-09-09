@@ -81,7 +81,7 @@ for (const width of [320, 1440]) {
       // Next gives the default local font a generated family name.
       if (mood.fontName !== 'Cormorant Garamond') expect(css.font).toContain(mood.fontName);
       expect(css.paper).toBe(palette.background);
-      expect(css.surface).toBe(surface.image);
+      expect(css.surface).toBe(surface.image.replaceAll('var(--homepage-grid)', palette.grid));
       expect(css.paintedSurface === 'none').toBe(surface.image === 'none');
       rendered.add(JSON.stringify(css));
       await expectFits(page);
