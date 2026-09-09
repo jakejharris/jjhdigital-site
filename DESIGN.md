@@ -5,8 +5,10 @@ The emptiness is the design.
 
 Scope: the public site; developer controls are exempt. The shuffle is
 the one flourish: it changes color, type, and surface while the layout
-stays put. Each draw is a composed mood, with its own face, tracking, and
-paper; visual choices do not randomize independently.
+stays put. Six faces, twelve palettes, and three paper surfaces combine
+into 216 moods. Each face keeps its own tracking, and each palette keeps
+its background and readable inks together; colors never randomize independently.
+The first visit always starts on the original ivory letterhead.
 
 ## Space
 
@@ -36,6 +38,8 @@ paper; visual choices do not randomize independently.
 
 - One paper, one ink, at most one accent per view.
 - Anything that must be read clears 4.5:1; quieter inks are decoration.
+- Plain, drafting-grid, and dot paper share each palette's subtle texture
+  ink. Readable colors also clear 4.5:1 over intersecting grid lines.
 
 ## Restraint
 
@@ -51,6 +55,9 @@ Never: dashboard density, SaaS landing page, cards.
 - A tap on the type or the single rotation icon draws another complete design.
   Space does the same; Shift + Space goes back. The icon has an accessible
   name and keyboard hint, with no visible shuffle label or second control.
+- Every combination is reachable, with equal odds among the other 215.
+  A shuffle cannot repeat the current combination. Undo restores the exact
+  face, palette, and surface, including when two moods share a face.
 - The rotation control sits at the upper right of the masthead, above the
   lettering, with clear space around its touch target. LLC ends the name
   at the lower right; it never moves onto a separate caption line.

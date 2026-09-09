@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { homepageMoods, homepagePalettes, nextHomepageMood } from '../choices';
+import { defaultHomepageStyle, homepageMoods, homepagePalettes, homepageTypefaces, nextHomepageMood, surfaceTreatments } from '../choices';
 
 function luminance(hex: string) {
   const channels = hex.slice(1).match(/../g)!.map((channel) => {
@@ -14,10 +14,23 @@ function contrast(a: string, b: string) {
 }
 
 describe('complete moods', () => {
+  it('offers 216 distinct combinations with a visible surface for every palette', () => {
+    expect(homepageMoods).toHaveLength(216);
+    expect(new Set(homepageMoods.map((mood) => JSON.stringify(mood))).size).toBe(216);
+    expect(homepageMoods[0]).toEqual({ fontName: 'Cormorant Garamond', style: defaultHomepageStyle });
+    for (const face of homepageTypefaces) {
+      const moods = homepageMoods.filter((mood) => mood.fontName === face.fontName);
+      expect(moods).toHaveLength(homepagePalettes.length * surfaceTreatments.length);
+      expect(moods.every((mood) => mood.style.tracking === face.tracking)).toBe(true);
+    }
+    expect(new Set(surfaceTreatments.map((surface) => surface.image)).size).toBe(surfaceTreatments.length);
+    expect(homepagePalettes.map((palette) => palette.grid)).not.toContain('transparent');
+  });
+
   it('can draw every other mood, and never repeats the current one', () => {
     for (const current of homepageMoods) {
       const draws = Array.from({ length: homepageMoods.length - 1 }, (_, n) =>
-        nextHomepageMood(current.fontName, () => n / (homepageMoods.length - 1))
+        nextHomepageMood({ ...current, style: { ...current.style } }, () => (n + .5) / (homepageMoods.length - 1))
       );
       expect(new Set(draws).size).toBe(homepageMoods.length - 1);
       expect(draws).not.toContain(current);
@@ -27,15 +40,25 @@ describe('complete moods', () => {
 
   it('returns to the original letterhead, including after lab browsing', () => {
     const last = homepageMoods.at(-1)!;
-    expect(nextHomepageMood(last.fontName, () => 0)).toBe(homepageMoods[0]);
-    expect(nextHomepageMood('a lab font', () => 0)).toBe(homepageMoods[0]);
-    expect(nextHomepageMood('a lab font', () => .999999)).toBe(last);
+    const lab = { fontName: 'a lab font', style: defaultHomepageStyle };
+    expect(nextHomepageMood(last, () => 0)).toBe(homepageMoods[0]);
+    expect(nextHomepageMood(lab, () => 0)).toBe(homepageMoods[0]);
+    expect(nextHomepageMood(lab, () => .999999)).toBe(last);
   });
 
-  it('keeps all readable inks and contact hover states above AA contrast', () => {
+  it('keeps readable inks above AA contrast on plain paper and intersecting grid lines', () => {
     for (const palette of homepagePalettes) {
-      for (const ink of ['ink', 'body', 'accent'] as const) {
-        expect(contrast(palette[ink], palette.background), `${palette.name}: ${ink}`).toBeGreaterThanOrEqual(4.5);
+      const [r, g, b, opacity] = palette.grid.match(/[\d.]+/g)!.map(Number);
+      // Two grid strokes overlap at intersections; dots only draw one layer.
+      const alpha = 1 - (1 - opacity) ** 2;
+      const background = palette.background.slice(1).match(/../g)!.map((channel) => parseInt(channel, 16));
+      const intersection = '#' + [r, g, b].map((channel, index) =>
+        Math.round(channel * alpha + background[index] * (1 - alpha)).toString(16).padStart(2, '0')
+      ).join('');
+      for (const paper of [palette.background, intersection]) {
+        for (const ink of ['ink', 'body', 'accent'] as const) {
+          expect(contrast(palette[ink], paper), `${palette.name}: ${ink} on ${paper}`).toBeGreaterThanOrEqual(4.5);
+        }
       }
     }
   });
