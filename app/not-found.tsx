@@ -1,13 +1,16 @@
 import Link from 'next/link';
+import { displayFont } from './fonts';
 
 export default function NotFound() {
   return (
-    <main className="flex min-h-[100dvh] items-center px-6 py-6 sm:px-16 sm:py-16">
-      <div className="mx-auto w-full max-w-5xl">
-        <h1 className="font-serif text-5xl">A little too much empty space.</h1>
-        <p className="mt-6 text-base leading-relaxed">There is no page here.</p>
-        <Link href="/" className="mt-6 inline-block underline underline-offset-4">Back to JJH DIGITAL</Link>
-      </div>
+    <main className="letterhead">
+      <section className="letterhead-content">
+        <h1 className={`not-found-title ${displayFont.className}`}>This sheet is blank.</h1>
+        <div className="letterhead-note">
+          <p>There is no page at this address. The homepage has 216 moods, though.</p>
+          <p className="not-found-link"><Link href="/">Back to JJH DIGITAL</Link></p>
+        </div>
+      </section>
     </main>
   );
 }

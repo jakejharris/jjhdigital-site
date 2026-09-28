@@ -13,7 +13,7 @@ import {
   type WordmarkController,
 } from '@/components/wordmark-shared';
 import {
-  homepagePalettes,
+  allPalettes,
   surfaceTreatments,
 } from '@/lib/homepage-design/choices';
 
@@ -66,7 +66,7 @@ export default function StyleLab({ controller }: StyleLabProps) {
   );
   const selectedFont = visibleFonts[selectedIndex];
 
-  const palette = homepagePalettes[style.palette];
+  const palette = allPalettes[style.palette];
   const surfaceTreatment = surfaceTreatments[style.surface];
 
   // Prefetch the fonts on either side of the selection so wheel browsing

@@ -15,11 +15,13 @@ test('company and founder identity are crawlable with consistent search and shar
   await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName('JJH DIGITAL LLC');
   await expect(page.getByRole('link', { name: 'Jake Harris', exact: true })).toHaveAttribute('href', 'https://www.jakejh.com/');
   await expect(page.locator('.letterhead-note p')).toContainText('Founded by Jake Harris, JJH DIGITAL LLC');
+  await expect(page.locator('.letterhead-note p')).toContainText('websites, web apps, and AI tools');
 
   const description = await page.locator('meta[name="description"]').getAttribute('content');
   expect(description).toContain('Jake Harris');
   expect(description).toContain('JJH DIGITAL LLC');
-  expect(description).toContain('websites, and software');
+  expect(description).toContain('websites, web apps, and AI tools');
+  expect(description).toContain('you own the code');
   await expect(page.locator('meta[property="og:title"]')).toHaveAttribute('content', await page.title());
   await expect(page.locator('meta[name="twitter:title"]')).toHaveAttribute('content', await page.title());
   await expect(page.locator('meta[property="og:description"]')).toHaveAttribute('content', description!);
