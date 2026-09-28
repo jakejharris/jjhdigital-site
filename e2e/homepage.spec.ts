@@ -231,6 +231,47 @@ for (const width of [320, 321, 390, 639, 640, 768, 1440]) {
 }
 
 test.describe('motion', () => {
+  test('reuses settled glyphs, resamples after resize, and bounds the phone bitmap', async ({ browser, baseURL }) => {
+    const context = await browser.newContext({ baseURL, viewport: { width: 390, height: 844 }, deviceScaleFactor: 3 });
+    const page = await context.newPage();
+    await page.addInitScript(() => {
+      const read = CanvasRenderingContext2D.prototype.getImageData;
+      Object.assign(window, { glyphReads: 0 });
+      CanvasRenderingContext2D.prototype.getImageData = function (...args: Parameters<typeof read>) {
+        (window as unknown as { glyphReads: number }).glyphReads++;
+        return read.apply(this, args);
+      };
+    });
+    await page.goto('/');
+    await warmFonts(page);
+    await settled(page);
+    await dealNext(page, 1, [1], [2, 3, 4]);
+    await die(page).click();
+    await settled(page);
+    const reads = () => page.evaluate(() => (window as unknown as { glyphReads: number }).glyphReads);
+    const before = await reads();
+    await die(page).click();
+    await settled(page);
+    // Only the new face needs rasterizing; the previous destination is still valid.
+    expect(await reads() - before).toBe(13);
+
+    await page.setViewportSize({ width: 320, height: 844 });
+    await expectFits(page);
+    const resized = await reads();
+    await die(page).click();
+    await settled(page);
+    // Resizing changed both layouts, so the old sample must not survive it.
+    expect(await reads() - resized).toBe(26);
+    await expectFits(page);
+    const bitmap = await page.locator('canvas').evaluate((canvas: HTMLCanvasElement) => {
+      const box = canvas.getBoundingClientRect();
+      return { width: canvas.width, height: canvas.height, cssWidth: box.width, cssHeight: box.height };
+    });
+    expect(bitmap.width).toBe(Math.round(bitmap.cssWidth * 2));
+    expect(bitmap.height).toBe(Math.round(bitmap.cssHeight * 2));
+    await context.close();
+  });
+
   for (const width of [390, 1440]) {
     test(`at ${width}px the name prints on arrival and re-sets as pixels on a roll, then settles crisp`, async ({ page }) => {
       const errors: string[] = [];
@@ -294,6 +335,9 @@ test.describe('motion', () => {
     }));
     await die(page).click();
     expect(await spread).toBe(true);
+    expect(await page.evaluate(() => document.getAnimations().some((animation) =>
+      (animation.effect as KeyframeEffect | null)?.pseudoElement === '::view-transition-group(root)'
+    ))).toBe(false);
     await settled(page);
     expect(await paper(page)).toBe('#1738cd');
 

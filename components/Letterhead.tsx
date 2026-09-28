@@ -118,7 +118,7 @@ export default function Letterhead({ baseFontClassName, children }: { baseFontCl
         else seen.current.add(shown);
       }
       const seenNow = seen.current.size;
-      source.current = capture();
+      const from = capture();
       const press = pressed.current;
       pressed.current = null;
       const said = shown === secretNumber
@@ -126,19 +126,24 @@ export default function Letterhead({ baseFontClassName, children }: { baseFontCl
         : `${shown ? `No. ${shown}: ` : ''}${describeMood(snapshot)}.`;
       // The count and the mood change together, even mid-transition.
       const commit = () => {
+        // A captured page may be ready after a newer click already committed.
+        if (id !== request.current) return;
+        source.current = from;
         setDesign(snapshot);
         setSeenCount(seenNow);
         setLoadState('ready');
         setAnnouncement(action === 'back' ? `${said.slice(0, -1)}, restored.` : said);
       };
       const paper = ({ style }: DesignSnapshot) => `${style.palette}/${style.surface}`;
-      if (source.current && paper(snapshot) !== paper(displayed.current) && 'startViewTransition' in document) {
+      // Keep one set of root snapshots alive. Fast clicks update the live new
+      // page and retarget its pixels inside the existing circle instead of
+      // repeatedly interrupting browser capture with another transition.
+      if (from && !spreading.current && paper(snapshot) !== paper(displayed.current) && 'startViewTransition' in document) {
         const die = dieRef.current?.getBoundingClientRect();
         const transition = spreadPaper(commit, press ?? (die
           ? { x: die.left + die.width / 2, y: die.top + die.height / 2 }
           : { x: innerWidth / 2, y: innerHeight / 3 }));
         spreading.current = transition;
-        // A newer roll skips this transition; only the current one may clear it.
         const settle = () => { if (spreading.current === transition) spreading.current = null; };
         transition.finished.then(settle, settle);
       } else {
@@ -225,6 +230,8 @@ export default function Letterhead({ baseFontClassName, children }: { baseFontCl
       cancelled = true;
       request.current += 1;
       morph.current?.stop();
+      spreading.current?.skipTransition();
+      spreading.current = null;
       window.removeEventListener('hashchange', onHashChange);
     };
   }, [reveal, showDesign, startMorph]);
@@ -244,11 +251,15 @@ export default function Letterhead({ baseFontClassName, children }: { baseFontCl
     const button = wordmarkRef.current;
     if (!type || !button) return;
     let active = true;
+    let fittedWidth = 0;
+    let fittedHeight = 0;
     function fit() {
       if (!active || !type || !button) return;
       type.style.fontSize = '';
       const width = button.clientWidth;
       if (width <= 1) return;
+      fittedWidth = width;
+      fittedHeight = button.clientHeight;
       const measureWidth = () => Math.max(
         type.scrollWidth,
         ...Array.from(type.children, (el) => el.getBoundingClientRect().width)
@@ -267,9 +278,13 @@ export default function Letterhead({ baseFontClassName, children }: { baseFontCl
     fit();
     if (source.current) startMorph();
     else if (opened.current) reveal();
-    const observer = new ResizeObserver(fit);
+    // ResizeObserver delivers once on subscription too. The layout effect has
+    // already fitted this size; resetting it again forces another layout.
+    const observer = new ResizeObserver(() => {
+      if (button.clientWidth !== fittedWidth || button.clientHeight !== fittedHeight) fit();
+    });
     observer.observe(button);
-    void document.fonts.ready.then(fit);
+    if (document.fonts.status !== 'loaded') void document.fonts.ready.then(fit);
     return () => { active = false; observer.disconnect(); };
   }, [design, startMorph]);
 
@@ -428,10 +443,11 @@ export default function Letterhead({ baseFontClassName, children }: { baseFontCl
 // always keeps its contrast. Without View Transitions the paper just swaps.
 function spreadPaper(commit: () => void, { x, y }: { x: number; y: number }) {
   const transition = document.startViewTransition(() => flushSync(commit));
+  let animation: Animation | undefined;
   transition.ready.then(() => {
     const radius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
     try {
-      document.documentElement.animate(
+      animation = document.documentElement.animate(
         { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] },
         { duration: 520, easing: 'cubic-bezier(.3,.7,.2,1)', pseudoElement: '::view-transition-new(root)' },
       );
@@ -439,6 +455,8 @@ function spreadPaper(commit: () => void, { x, y }: { x: number; y: number }) {
       // A browser that cannot animate the new page just shows it.
     }
   }, () => undefined);
+  const release = () => { animation?.cancel(); };
+  transition.finished.then(release, release);
   return transition;
 }
 

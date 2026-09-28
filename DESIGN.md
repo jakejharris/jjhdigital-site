@@ -74,6 +74,7 @@ the name's one print pass on arrival.
   the whole old page or the whole new one, so ink keeps its contrast. Without
   View Transitions the paper swaps at once.
 - Fast taps start from wherever the pixels are and never get lost.
+  During a paper spread, they update the new sheet inside the same circle.
 - Foil catches the light as the pointer moves.
 - A failed font leaves the current mood intact; a slow font never paints
   half a mood. Reduced motion removes the print pass, the pixels, and the
