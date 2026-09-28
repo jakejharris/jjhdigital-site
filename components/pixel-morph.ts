@@ -117,7 +117,12 @@ export function createPixelMorph(canvas: HTMLCanvasElement) {
       frame = requestAnimationFrame(draw);
     } else {
       frame = 0;
-      finish?.();
+      // The bitmap holds the last frame during the fade; its particle graph
+      // and completion closure no longer need to keep the old glyphs alive.
+      particles = [];
+      const onDone = finish;
+      finish = undefined;
+      onDone?.();
     }
   }
 
