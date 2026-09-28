@@ -244,11 +244,15 @@ export default function Letterhead({ baseFontClassName, children }: { baseFontCl
     const button = wordmarkRef.current;
     if (!type || !button) return;
     let active = true;
+    let fittedWidth = 0;
+    let fittedHeight = 0;
     function fit() {
       if (!active || !type || !button) return;
       type.style.fontSize = '';
       const width = button.clientWidth;
       if (width <= 1) return;
+      fittedWidth = width;
+      fittedHeight = button.clientHeight;
       const measureWidth = () => Math.max(
         type.scrollWidth,
         ...Array.from(type.children, (el) => el.getBoundingClientRect().width)
@@ -267,9 +271,13 @@ export default function Letterhead({ baseFontClassName, children }: { baseFontCl
     fit();
     if (source.current) startMorph();
     else if (opened.current) reveal();
-    const observer = new ResizeObserver(fit);
+    // ResizeObserver delivers once on subscription too. The layout effect has
+    // already fitted this size; resetting it again forces another layout.
+    const observer = new ResizeObserver(() => {
+      if (button.clientWidth !== fittedWidth || button.clientHeight !== fittedHeight) fit();
+    });
     observer.observe(button);
-    void document.fonts.ready.then(fit);
+    if (document.fonts.status !== 'loaded') void document.fonts.ready.then(fit);
     return () => { active = false; observer.disconnect(); };
   }, [design, startMorph]);
 

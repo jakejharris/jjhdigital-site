@@ -503,7 +503,9 @@
   }
 }
 
-/* The paper change is drawn by script as a circle from the press. */
+/* The paper change is drawn by script as a circle from the press. The root
+   stays viewport-sized, so skip the browser's default width/height animation. */
+::view-transition-group(root),
 ::view-transition-old(root),
 ::view-transition-new(root) {
   animation: none;

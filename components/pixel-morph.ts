@@ -6,6 +6,7 @@ import {
 export type GlyphLayout = Cell[][];
 
 let scratch: CanvasRenderingContext2D | null | undefined;
+const sampled = new WeakMap<HTMLElement, { key: string; glyphs: GlyphLayout }>();
 
 // Rasterizes every character of the rendered wordmark where the browser laid
 // it out, so the pixels land exactly on the type that replaces them. Letters
@@ -15,7 +16,7 @@ export function sampleWordmark(type: HTMLElement, canvas: HTMLCanvasElement): Gl
   const ctx = scratch;
   if (!ctx) return [];
   const origin = canvas.getBoundingClientRect();
-  const glyphs: GlyphLayout = [];
+  const letters: Array<{ char: string; font: string; cell: number; x: number; y: number }> = [];
   const range = document.createRange();
   const walker = document.createTreeWalker(type, NodeFilter.SHOW_TEXT);
   for (let node = walker.nextNode(); node; node = walker.nextNode()) {
@@ -32,23 +33,34 @@ export function sampleWordmark(type: HTMLElement, canvas: HTMLCanvasElement): Gl
       range.setEnd(node, i + 1);
       const box = range.getClientRects()[0];
       if (!box) continue;
-      ctx.font = font;
-      const m = ctx.measureText(char);
-      const penX = box.left - origin.left;
-      const baseline = box.top - origin.top + m.fontBoundingBoxAscent;
-      const left = Math.floor(penX - m.actualBoundingBoxLeft) - cell;
-      const top = Math.floor(baseline - m.actualBoundingBoxAscent) - cell;
-      const width = Math.ceil(m.actualBoundingBoxLeft + m.actualBoundingBoxRight) + cell * 2;
-      const height = Math.ceil(m.actualBoundingBoxAscent + m.actualBoundingBoxDescent) + cell * 2;
-      if (width <= 0 || height <= 0) continue;
-      ctx.canvas.width = width;
-      ctx.canvas.height = height;
-      ctx.font = font;
-      ctx.fillText(char, penX - left, baseline - top);
-      // A low threshold keeps hairlines, like the bar of a Garamond H.
-      glyphs.push(sampleCells(ctx.getImageData(0, 0, width, height).data, width, height, left, top, cell, 0.2));
+      letters.push({ char, font, cell, x: box.left - origin.left, y: box.top - origin.top });
     }
   }
+  // The previous destination is normally the next source. Check the actual
+  // layout before reusing it, including resizes, tracking and press transforms.
+  // Keep only one sample per wordmark, and never cache a loading font's fallback.
+  const key = JSON.stringify([document.fonts.size, letters]);
+  const previous = sampled.get(type);
+  if (document.fonts.status === 'loaded' && previous?.key === key) return previous.glyphs;
+  const glyphs: GlyphLayout = [];
+  for (const { char, font, cell, x: penX, y } of letters) {
+    ctx.font = font;
+    const m = ctx.measureText(char);
+    const baseline = y + m.fontBoundingBoxAscent;
+    const left = Math.floor(penX - m.actualBoundingBoxLeft) - cell;
+    const top = Math.floor(baseline - m.actualBoundingBoxAscent) - cell;
+    const width = Math.ceil(m.actualBoundingBoxLeft + m.actualBoundingBoxRight) + cell * 2;
+    const height = Math.ceil(m.actualBoundingBoxAscent + m.actualBoundingBoxDescent) + cell * 2;
+    if (width <= 0 || height <= 0) continue;
+    ctx.canvas.width = width;
+    ctx.canvas.height = height;
+    ctx.font = font;
+    ctx.fillText(char, penX - left, baseline - top);
+    // A low threshold keeps hairlines, like the bar of a Garamond H.
+    glyphs.push(sampleCells(ctx.getImageData(0, 0, width, height).data, width, height, left, top, cell, 0.2));
+  }
+  if (document.fonts.status === 'loaded') sampled.set(type, { key, glyphs });
+  else sampled.delete(type);
   return glyphs;
 }
 
@@ -75,9 +87,13 @@ export function createPixelMorph(canvas: HTMLCanvasElement) {
 
   function fit() {
     const rect = canvas.getBoundingClientRect();
-    const ratio = window.devicePixelRatio || 1;
-    canvas.width = Math.round(rect.width * ratio);
-    canvas.height = Math.round(rect.height * ratio);
+    // The art uses whole and half CSS pixels. Two device pixels per CSS pixel
+    // preserve those edges without a nine-times-larger bitmap on a 3× phone.
+    const ratio = Math.min(2, window.devicePixelRatio || 1);
+    const width = Math.round(rect.width * ratio);
+    const height = Math.round(rect.height * ratio);
+    if (canvas.width !== width) canvas.width = width;
+    if (canvas.height !== height) canvas.height = height;
     ctx?.setTransform(ratio, 0, 0, ratio, 0, 0);
   }
 
