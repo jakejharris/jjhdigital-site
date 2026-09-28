@@ -21,10 +21,11 @@ npm run test:e2e
 ```
 
 The browser suite builds and serves production on port 3100. It checks the
-masthead at phone and desktop widths, shuffle and undo, contact, missing
-fonts, reduced motion, and the development boundary. CI runs these checks
-and audits production dependencies. Failed browser checks retain artifacts
-for seven days.
+masthead at phone and desktop widths, the arrival and shuffle animations,
+the deck and shared links, shuffle and undo, contact, missing fonts and
+scripts, reduced motion, printing, and the development boundary. CI runs
+these checks and audits production dependencies. Failed browser checks
+retain artifacts for seven days.
 
 ## Vercel CLI
 
@@ -48,7 +49,7 @@ npx vercel@latest inspect <deployment-url>
 npx vercel@latest promote <deployment-url>
 ```
 
-Check the live homepage, shuffle, email copy, favicon, `/robots.txt`,
+Check the live homepage, shuffle, a shared link such as `/#147`, email copy, favicon, `/robots.txt`,
 `/sitemap.xml`, and `/opengraph-image`. The style lab and `/api/font-lab`
 must not be available in production. Confirm www redirects to the canonical
 address. Before a manual release, record the previous production URL; use
