@@ -15,6 +15,14 @@ export const homepagePalettes = [
   { name: 'Sand', background: '#ebd7b3', ink: '#473726', body: '#604a35', accent: '#70401f', grid: 'rgba(71,55,38,0.06)' },
 ] as const;
 
+// The edition that is not on the list: gold foil on black. It follows the
+// other twelve so a palette index can still name it.
+export const foilPalette = {
+  name: 'Foil', background: '#16140f', ink: '#e8c470', body: '#d8cfb9', accent: '#e8c470', grid: 'rgba(232,196,112,0.07)',
+} as const;
+export const allPalettes = [...homepagePalettes, foilPalette];
+export type Palette = (typeof allPalettes)[number];
+
 export const wordmarkTracking = [
   { name: 'Tailored', value: '-0.045em' },
   { name: 'Close', value: '-0.06em' },
@@ -22,14 +30,16 @@ export const wordmarkTracking = [
   { name: 'Natural', value: '-0.02em' },
 ] as const;
 export const surfaceTreatments = [
-  { name: 'Plain', image: 'none', size: 'auto' },
+  { name: 'Plain', paper: 'paper', image: 'none', size: 'auto' },
   {
     name: 'Drafting paper',
+    paper: 'drafting paper',
     image: 'linear-gradient(var(--homepage-grid) 1px, transparent 1px), linear-gradient(90deg, var(--homepage-grid) 1px, transparent 1px)',
     size: '64px 64px',
   },
   {
     name: 'Dot paper',
+    paper: 'dot paper',
     image: 'radial-gradient(circle, var(--homepage-grid) 1px, transparent 1px)',
     size: '24px 24px',
   },
@@ -55,7 +65,8 @@ export const homepageTypefaces = [
   { fontName: 'Bebas Neue', tracking: 2 },
 ] as const;
 
-// 6 faces × 12 palettes × 3 surfaces = 216 distinct combinations.
+// 12 palettes × 3 surfaces × 6 faces = 216 editions, numbered from 1 in this
+// order. No. 1 is the original ivory letterhead.
 export const homepageMoods: DesignSnapshot[] = homepagePalettes.flatMap((_, palette) =>
   surfaceTreatments.flatMap((_, surface) =>
     homepageTypefaces.map(({ fontName, tracking }) => ({
@@ -63,16 +74,62 @@ export const homepageMoods: DesignSnapshot[] = homepagePalettes.flatMap((_, pale
     }))
   )
 );
+export const secretMood: DesignSnapshot = {
+  fontName: 'Cormorant Garamond',
+  style: { palette: homepagePalettes.length, tracking: 0, surface: 0 },
+};
+export const secretNumber = homepageMoods.length + 1;
 
-// A draw can reach every other composition, including the first one. Passing
-// the random source makes the complete tour reproducible in browser checks.
-export function nextHomepageMood(snapshot: DesignSnapshot, random = Math.random) {
-  const current = homepageMoods.findIndex((mood) =>
-    mood.fontName === snapshot.fontName &&
-    mood.style.palette === snapshot.style.palette &&
-    mood.style.tracking === snapshot.style.tracking &&
-    mood.style.surface === snapshot.style.surface
-  );
-  const offset = Math.floor(random() * (homepageMoods.length - (current < 0 ? 0 : 1))) + 1;
-  return homepageMoods[(current + offset) % homepageMoods.length];
+export function sameMood(a: DesignSnapshot, b: DesignSnapshot) {
+  return a.fontName === b.fontName &&
+    a.style.palette === b.style.palette &&
+    a.style.tracking === b.style.tracking &&
+    a.style.surface === b.style.surface;
+}
+
+// 1 to 216 for the listed editions, 217 for foil, undefined for a lab font.
+export function moodNumber(snapshot: DesignSnapshot): number | undefined {
+  if (sameMood(snapshot, secretMood)) return secretNumber;
+  const index = homepageMoods.findIndex((mood) => sameMood(mood, snapshot));
+  return index < 0 ? undefined : index + 1;
+}
+export function moodForNumber(number: number): DesignSnapshot | undefined {
+  if (number === secretNumber) return secretMood;
+  return Number.isInteger(number) ? homepageMoods[number - 1] : undefined;
+}
+
+// Accepts "#147" or "147"; anything else means no edition was asked for.
+export function moodNumberFromHash(hash: string): number | undefined {
+  const match = /^#?(\d{1,3})$/.exec(hash);
+  const number = match ? Number(match[1]) : NaN;
+  return moodForNumber(number) ? number : undefined;
+}
+
+export function describeMood(snapshot: DesignSnapshot) {
+  const palette = allPalettes[snapshot.style.palette] ?? homepagePalettes[0];
+  const surface = surfaceTreatments[snapshot.style.surface] ?? surfaceTreatments[0];
+  return `${snapshot.fontName} on ${palette.name} ${surface.paper}`;
+}
+
+// The shuffle deals from a deck: every draw is an edition you have not seen
+// this visit, with equal odds among them. Once all 216 are seen, the next draw
+// is the foil edition, and after that the deck starts over. Candidates run in
+// order from the current edition, so a random source of 0 walks the whole
+// catalog, which keeps browser checks reproducible.
+export function nextHomepageMood(
+  snapshot: DesignSnapshot,
+  seen: ReadonlySet<number>,
+  random = Math.random,
+): DesignSnapshot {
+  const current = moodNumber(snapshot);
+  const listed = homepageMoods.length;
+  const allSeen = homepageMoods.every((_, index) => seen.has(index + 1));
+  if (allSeen && current !== secretNumber) return secretMood;
+
+  const start = current && current <= listed ? current : 0;
+  const order = Array.from({ length: listed }, (_, offset) => (start + offset) % listed + 1)
+    .filter((number) => number !== current);
+  const unseen = allSeen ? order : order.filter((number) => !seen.has(number));
+  const candidates = unseen.length ? unseen : order;
+  return homepageMoods[candidates[Math.floor(random() * candidates.length)] - 1];
 }

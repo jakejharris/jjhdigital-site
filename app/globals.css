@@ -1,5 +1,11 @@
 @import 'tailwindcss';
 @layer base {
+  /* Taps never zoom the page by accident, and it neither bounces nor pulls
+     to refresh. Pinch zoom still works. */
+  html, body {
+    touch-action: manipulation;
+    overscroll-behavior-y: none;
+  }
   body {
     margin: 0;
     background: var(--homepage-background, #f6f4ee);
@@ -23,8 +29,10 @@
 
 .letterhead {
   display: flex;
+  flex-direction: column;
   min-height: 100dvh;
   padding: 64px;
+  overflow-x: clip;
   background-color: var(--homepage-background, #f6f4ee);
   background-image: var(--homepage-surface-image, none);
   background-size: var(--homepage-surface-size, auto);
@@ -87,6 +95,56 @@
   color: var(--homepage-ink);
 }
 
+/* The name as pixels. The canvas only draws while letters move; the text
+   underneath stays the heading, the button label, and the fallback. */
+.wordmark-pixels {
+  position: absolute;
+  top: 0;
+  left: -16px;
+  width: calc(100% + 32px);
+  height: calc(100% + 24px);
+  pointer-events: none;
+  opacity: 0;
+}
+
+/* Pixels appear at once and fade as the crisp letters return. */
+.masthead[data-morphing] .wordmark-pixels {
+  opacity: 1;
+}
+
+.masthead[data-morphing] .wordmark-type,
+.intro .wordmark-type {
+  opacity: 0;
+}
+
+/* If scripts are slow or never run, the name shows up anyway. */
+.intro .wordmark-type {
+  animation: arrive-anyway 0s 1.2s forwards;
+}
+
+@keyframes arrive-anyway {
+  to { opacity: 1; }
+}
+
+/* No. 217: the one that is not on the list. The foil catches the light as
+   the pointer moves. Its box grows to cover the Garamond J's hooked tail,
+   below and to the left of the letters, because the gradient only paints
+   inside the box. */
+.wordmark-foil .wordmark-type,
+.wordmark-foil .wordmark-llc {
+  color: transparent;
+  background-image: linear-gradient(100deg, #b8862c 0%, #f3d48a 24%, #c89a3e 42%, #fff1c4 56%, #b8862c 74%, #e8c470 100%);
+  background-size: 250% 100%;
+  background-position: var(--foil-shift, 35%) 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.wordmark-foil .wordmark-type {
+  padding: .15em 0 .35em .15em;
+  margin: -.15em 0 -.35em -.15em;
+}
+
 .mood-controls {
   position: absolute;
   top: 0;
@@ -96,7 +154,7 @@
   color: var(--homepage-body);
 }
 
-.mood-rotate {
+.mood-die {
   position: relative;
   display: flex;
   align-items: center;
@@ -108,7 +166,7 @@
   touch-action: manipulation;
 }
 
-.mood-rotate::before {
+.mood-die::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -119,21 +177,25 @@
   pointer-events: none;
 }
 
-.mood-rotate-glyph {
+.mood-die-glyph {
   display: block;
   transform: rotate(var(--mood-turn, 0deg));
 }
 
-.mood-rotate:focus-visible::before {
+.mood-die .die {
+  display: block;
+}
+
+.mood-die:focus-visible::before {
   opacity: .25;
   transform: scale(1);
 }
 
-.mood-rotate:active {
+.mood-die:active .die {
   transform: scale(.86);
 }
 
-.mood-rotate[aria-busy='true'] .mood-rotate-glyph {
+.mood-die[aria-busy='true'] .mood-die-glyph {
   opacity: .5;
 }
 
@@ -150,15 +212,15 @@
 }
 
 @media (hover: hover) {
-  .mood-rotate:hover {
+  .mood-die:hover {
     color: var(--homepage-ink);
   }
-  .mood-rotate:hover::before {
+  .mood-die:hover::before {
     opacity: .25;
     transform: scale(1);
   }
-  .mood-rotate:hover .mood-rotate-icon {
-    transform: rotate(-28deg);
+  .mood-die:hover .die {
+    transform: rotate(-18deg);
   }
 }
 
@@ -234,31 +296,108 @@
 }
 
 .email-feedback {
-  min-height: 44px;
-  margin-top: 8px;
+  min-height: 24px;
+  margin-top: 10px;
   font-size: 13px;
   line-height: 1.6;
   color: var(--homepage-body);
 }
 
+/* The fallback link keeps a full 44px touch target inside a one-line slot:
+   it reaches 10px above and below its line. */
 .email-feedback a {
   display: inline-flex;
   align-items: center;
   min-height: 44px;
+  margin-block: -10px;
   text-decoration: underline;
   text-underline-offset: 4px;
 }
 
-@media (max-width: 639px) {
+/* Letterhead keeps its fine print at the foot of the page. This one names
+   the mood you are looking at. Mood names differ in length, so the footer
+   keeps room for its longest wording and the page above never shifts. While
+   the colophon is parked, the footer only appears in print. */
+@media screen {
+  .letterhead-footer:not([data-colophon]) {
+    display: none;
+  }
+}
+
+.letterhead-footer {
+  display: grid;
+  align-content: start;
+  gap: 0 24px;
+  min-height: calc(4.8em + 9px);
+  width: 100%;
+  max-width: 1024px;
+  margin: 64px auto 0;
+  padding-top: 8px;
+  border-top: 1px solid color-mix(in srgb, var(--homepage-body) 40%, transparent);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--homepage-body);
+  font-variant-numeric: tabular-nums;
+}
+
+.colophon-number {
+  color: var(--homepage-ink);
+}
+
+.keyboard-hint {
+  display: none;
+}
+
+@media (min-width: 900px) {
+  .letterhead-footer {
+    grid-template-columns: 1fr auto;
+    min-height: calc(3.2em + 9px);
+  }
+  .colophon-progress {
+    text-align: right;
+  }
+}
+
+@media (min-width: 900px) and (hover: hover) and (pointer: fine) {
+  .keyboard-hint {
+    display: inline;
+  }
+}
+
+.not-found-title {
+  padding-top: 64px;
+  font-size: clamp(48px, 7vw, 96px);
+  line-height: .95;
+  letter-spacing: -.03em;
+  color: var(--homepage-ink);
+}
+
+.letterhead-note .not-found-link {
+  margin-top: 24px;
+  color: var(--homepage-ink);
+}
+
+.print-only {
+  display: none;
+}
+
+/* Phones get the letterhead as one screen, like an app. Type and spacing
+   follow the screen's height as well as its width, so nothing scrolls and
+   nothing is cut off. The die sits beside JJH instead of on its own row.
+   A page zoomed in or set in larger text can still scroll. */
+@media (max-width: 639px), (max-height: 500px) and (orientation: landscape) {
   .letterhead {
-    padding: 24px;
+    padding: clamp(12px, 3.5dvh, 24px) 24px;
+  }
+  .masthead {
+    padding-top: 0;
+    container-type: inline-size;
   }
   .wordmark {
-    height: calc((100vw - 48px) * .55);
-    max-height: 304px;
+    height: min(55cqi, var(--masthead-cap));
   }
   .wordmark-type {
-    font-size: calc((100vw - 48px) * .235);
+    font-size: min(23.5cqi, var(--masthead-cap) * .427);
     line-height: .95;
     white-space: normal;
   }
@@ -268,22 +407,124 @@
   }
   .letterhead-note {
     max-width: none;
-    margin-top: 24px;
+    margin-top: clamp(12px, 3dvh, 24px);
   }
   .letterhead-note p {
-    font-size: 18px;
+    font-size: clamp(15px, 15px + (100dvh - 440px) * .025, 18px);
+    line-height: 1.5;
   }
+  .letterhead-contact {
+    margin-top: clamp(8px, 2dvh, 16px);
+  }
+  .letterhead-footer {
+    margin-top: 24px;
+  }
+}
+
+@media (max-width: 639px) {
+  .letterhead {
+    --masthead-cap: 28dvh;
+  }
+}
+
+/* A phone on its side: the name and the address on the left, the note on
+   the right. */
+@media (max-height: 500px) and (orientation: landscape) {
+  .letterhead {
+    --masthead-cap: calc(100dvh - 150px);
+  }
+  .letterhead-content {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    grid-template-areas: 'masthead note' 'contact note';
+    column-gap: clamp(24px, 5vw, 56px);
+    align-items: start;
+  }
+  .masthead {
+    grid-area: masthead;
+  }
+  .letterhead-note {
+    grid-area: note;
+    align-self: center;
+    margin-top: 0;
+  }
+  .letterhead-note p {
+    font-size: clamp(15px, 1.5vw + 6px, 17px);
+  }
+  .letterhead-contact {
+    grid-area: contact;
+  }
+}
+
+/* Printing the page gives you actual letterhead: the name at the top, the
+   fine print at the foot of every sheet, and room to write in between. */
+@media print {
+  @page {
+    margin: 16mm 18mm;
+  }
+  body, .letterhead {
+    background: #fff;
+  }
+  .letterhead {
+    display: block;
+    min-height: 0;
+    padding: 0;
+    background-image: none;
+  }
+  .letterhead-content {
+    margin: 0;
+    max-width: none;
+  }
+  .masthead {
+    padding-top: 0;
+  }
+  .wordmark {
+    height: auto;
+  }
+  .wordmark-type {
+    font-size: 44pt !important;
+    opacity: 1 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .mood-controls, .wordmark-pixels, .letterhead-note, .colophon-progress {
+    display: none !important;
+  }
+  .letterhead-footer {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: 0;
+    max-width: none;
+  }
+  .print-only {
+    display: block;
+  }
+}
+
+/* The paper change is drawn by script as a circle from the press. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
 }
 
 @media (prefers-reduced-motion: no-preference) {
   .wordmark-type, .homepage-email-button, .email-icon svg {
     transition: transform 160ms ease-out, opacity 160ms ease-out;
   }
-  .mood-rotate, .mood-rotate::before, .mood-rotate-icon {
+  .mood-die, .mood-die::before, .mood-die .die {
     transition: transform 240ms cubic-bezier(.2,.8,.2,1), opacity 240ms ease-out;
   }
-  .mood-rotate-glyph {
+  .mood-die-glyph {
     transition: transform 600ms cubic-bezier(.22,1.3,.36,1), opacity 160ms ease-out;
+  }
+  .wordmark-pixels {
+    transition: opacity 200ms ease-out;
+  }
+  .masthead[data-morphing] .wordmark-type, .masthead[data-morphing] .wordmark-pixels {
+    transition: none;
   }
 }
 
@@ -292,7 +533,7 @@
     animation: none !important;
     transition: none !important;
   }
-  .wordmark:active .wordmark-type, .mood-rotate:active, .mood-rotate-glyph, .mood-rotate:hover .mood-rotate-icon, .homepage-email-button:active {
+  .wordmark:active .wordmark-type, .mood-die:active .die, .mood-die-glyph, .mood-die:hover .die, .homepage-email-button:active {
     transform: none;
   }
 }

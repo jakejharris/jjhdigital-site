@@ -1,12 +1,10 @@
 # JJH DIGITAL
 
-JJH DIGITAL's home on the web is a quiet piece of letterhead with a playful streak. It says who we are, makes it easy to say hello, and lets a tap change the mood.
-
-Big type. Plenty of air. 216 moods.
+JJH DIGITAL's home on the web is letterhead that turns out to be made of pixels. It says who we are, makes it easy to say hello, and re-sets the name in a new mood with every tap.
 
 ## Play
 
-Tap the wordmark or rotation icon, or press Space to shuffle. Shift + Space goes back. Tap the email to copy it. The style lab appears only in development.
+Tap the name or roll the die. Space does the same, and Shift + Space goes back. There are 216 moods, with no repeats until you have seen them all. `/#147` opens No. 147. Try printing it.
 
 ## Run
 
@@ -21,7 +19,7 @@ Open http://localhost:3000. No secrets needed.
 
 ## Tinker
 
-The page lives in `app/page.tsx`; the mood lives in `lib/homepage-design/`. Read `AGENTS.md` and `DESIGN.md` before moving the furniture.
+The page lives in `app/page.tsx` and the toy in `components/Letterhead.tsx`; moods and pixel math live in `lib/`. Read `AGENTS.md` and `DESIGN.md` first.
 
 ```sh
 npm run typecheck
@@ -30,8 +28,4 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
-`npm run build` and `npm start` serve the production site. Fonts are bundled; the dev lab can use Google Fonts.
-
-Deploy: [DEPLOYMENT.md](DEPLOYMENT.md).
-
-MIT code. Font credits in `THIRD_PARTY_NOTICES.md`. Forks: bring your own name, words, and personality.
+Deploy: [DEPLOYMENT.md](DEPLOYMENT.md). MIT code, font credits in `THIRD_PARTY_NOTICES.md`. Forks: bring your own name, words, and personality.

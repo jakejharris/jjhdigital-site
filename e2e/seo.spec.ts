@@ -14,12 +14,18 @@ test('company and founder identity are crawlable with consistent search and shar
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', 'https://jjhdigital.com');
   await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName('JJH DIGITAL LLC');
   await expect(page.getByRole('link', { name: 'Jake Harris', exact: true })).toHaveAttribute('href', 'https://www.jakejh.com/');
-  await expect(page.locator('.letterhead-note p')).toContainText('Founded by Jake Harris, JJH DIGITAL LLC');
+  await expect(page.locator('.letterhead-note p')).toHaveText(
+    'Founded by Jake Harris, JJH DIGITAL LLC designs and builds thoughtful digital products, websites, ' +
+    'and software for modern businesses. We turn ambitious ideas into clear, capable experiences made to last.'
+  );
 
   const description = await page.locator('meta[name="description"]').getAttribute('content');
   expect(description).toContain('Jake Harris');
   expect(description).toContain('JJH DIGITAL LLC');
-  expect(description).toContain('websites, and software');
+  expect(description).toBe(
+    'Founded by Jake Harris, JJH DIGITAL LLC designs and builds thoughtful digital products, websites, ' +
+    'and software for modern businesses.'
+  );
   await expect(page.locator('meta[property="og:title"]')).toHaveAttribute('content', await page.title());
   await expect(page.locator('meta[name="twitter:title"]')).toHaveAttribute('content', await page.title());
   await expect(page.locator('meta[property="og:description"]')).toHaveAttribute('content', description!);
@@ -35,6 +41,7 @@ test('company and founder identity are crawlable with consistent search and shar
   expect(schema['@context']).toBe('https://schema.org');
   const organization = schema['@graph'].find((node: { '@type': string }) => node['@type'] === 'Organization');
   const website = schema['@graph'].find((node: { '@type': string }) => node['@type'] === 'WebSite');
+  expect(organization.description).toBe(description);
   expect(organization).toMatchObject({
     name: 'JJH DIGITAL', legalName: 'JJH DIGITAL LLC', alternateName: 'JJH DIGITAL LLC',
     url: 'https://jjhdigital.com', email: 'jake@jjhdigital.com',

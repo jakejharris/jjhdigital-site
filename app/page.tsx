@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { displayFont } from './fonts';
 import EmailCopy from '@/components/EmailCopy';
-import Wordmark from '@/components/Wordmark';
+import Letterhead from '@/components/Letterhead';
 import { site } from '@/lib/site';
 
 export const metadata: Metadata = {
@@ -60,23 +60,20 @@ export default function HomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, '\\u003c') }}
       />
-      <section className="letterhead-content" aria-labelledby="company-name">
-        <Wordmark baseFontClassName={displayFont.className} />
-
+      <Letterhead baseFontClassName={displayFont.className}>
         <div className="letterhead-note">
-          {/* The body follows the 18px mobile / 16px desktop rule in DESIGN.md. */}
+          {/* The body size follows the screen rules in DESIGN.md. */}
           <p>
             Founded by <a href={site.founder.url}>{site.founder.name}</a>,{' '}
             {site.legalName} designs and builds thoughtful digital products,
             websites, and software for modern businesses. We turn ambitious
             ideas into clear, capable experiences made to last.
           </p>
-
-          <div className="letterhead-contact">
-            <EmailCopy email={site.email} />
-          </div>
         </div>
-      </section>
+        <div className="letterhead-contact">
+          <EmailCopy email={site.email} />
+        </div>
+      </Letterhead>
     </main>
   );
 }
