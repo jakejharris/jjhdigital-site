@@ -1,5 +1,11 @@
 @import 'tailwindcss';
 @layer base {
+  /* Taps never zoom the page by accident, and it neither bounces nor pulls
+     to refresh. Pinch zoom still works. */
+  html, body {
+    touch-action: manipulation;
+    overscroll-behavior-y: none;
+  }
   body {
     margin: 0;
     background: var(--homepage-background, #f6f4ee);
@@ -290,24 +296,34 @@
 }
 
 .email-feedback {
-  min-height: 44px;
-  margin-top: 8px;
+  min-height: 24px;
+  margin-top: 10px;
   font-size: 13px;
   line-height: 1.6;
   color: var(--homepage-body);
 }
 
+/* The fallback link keeps a full 44px touch target inside a one-line slot:
+   it reaches 10px above and below its line. */
 .email-feedback a {
   display: inline-flex;
   align-items: center;
   min-height: 44px;
+  margin-block: -10px;
   text-decoration: underline;
   text-underline-offset: 4px;
 }
 
 /* Letterhead keeps its fine print at the foot of the page. This one names
    the mood you are looking at. Mood names differ in length, so the footer
-   keeps room for its longest wording and the page above never shifts. */
+   keeps room for its longest wording and the page above never shifts. While
+   the colophon is parked, the footer only appears in print. */
+@media screen {
+  .letterhead-footer:not([data-colophon]) {
+    display: none;
+  }
+}
+
 .letterhead-footer {
   display: grid;
   align-content: start;
@@ -365,16 +381,23 @@
   display: none;
 }
 
-@media (max-width: 639px) {
+/* Phones get the letterhead as one screen, like an app. Type and spacing
+   follow the screen's height as well as its width, so nothing scrolls and
+   nothing is cut off. The die sits beside JJH instead of on its own row.
+   A page zoomed in or set in larger text can still scroll. */
+@media (max-width: 639px), (max-height: 500px) and (orientation: landscape) {
   .letterhead {
-    padding: 24px;
+    padding: clamp(12px, 3.5dvh, 24px) 24px;
+  }
+  .masthead {
+    padding-top: 0;
+    container-type: inline-size;
   }
   .wordmark {
-    height: calc((100vw - 48px) * .55);
-    max-height: 304px;
+    height: min(55cqi, var(--masthead-cap));
   }
   .wordmark-type {
-    font-size: calc((100vw - 48px) * .235);
+    font-size: min(23.5cqi, var(--masthead-cap) * .427);
     line-height: .95;
     white-space: normal;
   }
@@ -384,13 +407,52 @@
   }
   .letterhead-note {
     max-width: none;
-    margin-top: 24px;
+    margin-top: clamp(12px, 3dvh, 24px);
   }
   .letterhead-note p {
-    font-size: 18px;
+    font-size: clamp(15px, 15px + (100dvh - 440px) * .025, 18px);
+    line-height: 1.5;
+  }
+  .letterhead-contact {
+    margin-top: clamp(8px, 2dvh, 16px);
   }
   .letterhead-footer {
     margin-top: 24px;
+  }
+}
+
+@media (max-width: 639px) {
+  .letterhead {
+    --masthead-cap: 28dvh;
+  }
+}
+
+/* A phone on its side: the name and the address on the left, the note on
+   the right. */
+@media (max-height: 500px) and (orientation: landscape) {
+  .letterhead {
+    --masthead-cap: calc(100dvh - 150px);
+  }
+  .letterhead-content {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    grid-template-areas: 'masthead note' 'contact note';
+    column-gap: clamp(24px, 5vw, 56px);
+    align-items: start;
+  }
+  .masthead {
+    grid-area: masthead;
+  }
+  .letterhead-note {
+    grid-area: note;
+    align-self: center;
+    margin-top: 0;
+  }
+  .letterhead-note p {
+    font-size: clamp(15px, 1.5vw + 6px, 17px);
+  }
+  .letterhead-contact {
+    grid-area: contact;
   }
 }
 

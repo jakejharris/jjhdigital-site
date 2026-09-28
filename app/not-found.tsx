@@ -7,7 +7,7 @@ export default function NotFound() {
       <section className="letterhead-content">
         <h1 className={`not-found-title ${displayFont.className}`}>This sheet is blank.</h1>
         <div className="letterhead-note">
-          <p>There is no page at this address. The homepage has 216 moods, though.</p>
+          <p>There is no page at this address.</p>
           <p className="not-found-link"><Link href="/">Back to JJH DIGITAL</Link></p>
         </div>
       </section>

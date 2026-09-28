@@ -17,6 +17,7 @@ JJH DIGITAL's home on the web is letterhead that turns out to be made of pixels.
 - Read DESIGN.md before changing the interface. Keep the wordmark, breathing room, and easy contact at the center of the page.
 - Shuffle changes the mood through type, color, and surface. Keep the layout steady and the default page useful before JavaScript loads.
 - Motion is the content, never decoration: the name's own pixels, triggered by the visitor, with a reduced-motion path and the text as the source of truth.
+- On phones the page is one screen, like an app: nothing scrolls or bounces, taps never zoom, and nothing is cut off. Pinch zoom and larger text still work.
 - Keep developer controls out of production. Keep public copy about the company and the experience, with implementation details in documentation.
 - Use semantic controls, visible keyboard focus, readable contrast, touch targets, and reduced-motion support. Check narrow screens and failed font or clipboard requests.
 - Prefer removing complexity to adding a framework. Add a dependency only when it clearly earns its place.
@@ -28,4 +29,4 @@ JJH DIGITAL's home on the web is letterhead that turns out to be made of pixels.
 - Keep the same two-sentence mission in this file and README.md. Keep the README at or below 1,000 characters.
 - Before shipping code, run npm run typecheck, npm test, and npm run test:e2e. The last command builds and checks the production site at mobile and desktop sizes.
 - Review npm audit --omit=dev and the staged diff before publishing. Explain observable changes and verification in commits and pull requests.
-- Tests should protect useful behavior: a working first visit with and without scripts, shuffle/undo, the deck and shared links, contact, font failures, reduced motion, and the public/development boundary.
+- Tests should protect useful behavior: a working first visit with and without scripts, the one-screen phone layout, shuffle/undo, the deck and shared links, contact, font failures, reduced motion, and the public/development boundary.

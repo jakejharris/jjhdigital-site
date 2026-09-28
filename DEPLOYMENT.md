@@ -21,7 +21,8 @@ npm run test:e2e
 ```
 
 The browser suite builds and serves production on port 3100. It checks the
-masthead at phone and desktop widths, the arrival and shuffle animations,
+masthead at phone and desktop widths, the one-screen phone layout upright
+and on its side, the arrival and shuffle animations,
 the deck and shared links, shuffle and undo, contact, missing fonts and
 scripts, reduced motion, printing, and the development boundary. CI runs
 these checks and audits production dependencies. Failed browser checks

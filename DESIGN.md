@@ -15,8 +15,8 @@ Scope: the public site. Developer controls are exempt.
 - Group with gap alone. A border or background must carry meaning no gap
   can. A button is a control, not a card. The footer rule is letterhead's
   own line between the page and its fine print.
-- Below 640px only the section tier compresses (64 → 24); content fills
-  the width minus margins. Component (24) and inside (8) tiers hold.
+- On phones the tiers follow the screen's height as well as its width (see
+  Phones); content fills the width minus 24px margins.
 
 ## Type
 
@@ -24,9 +24,11 @@ Scope: the public site. Developer controls are exempt.
   and 1.6 leading, and fine print is 13px.
 - Flush left, ragged right. Never centered, never justified.
 - Recede by color, not size: non-focal text steps down one ink.
-- Below 640px the body sets at 18px and returns to 16px from 640px up.
-- The name is one line on desktop and two on phones: JJH / DIGITAL. It fits
-  a reserved masthead, so a wider face never pushes the paragraph or contact.
+- On phones the body runs from 15px on the shortest screens to 18px, with
+  1.5 leading; it never goes below 15px.
+- The name is one line on desktop and two on phones, upright or on their
+  side: JJH / DIGITAL. It fits a reserved masthead, so a wider face never
+  pushes the paragraph or contact.
   LLC sits right after DIGITAL on the same baseline, like a small period, at
   0.24em (at least 13px), sharing the face, tracking, ink, and movement.
 
@@ -50,10 +52,13 @@ Scope: the public site. Developer controls are exempt.
 - The die has six faces for six typefaces and shows the one you are on.
   Foil gets seven pips, which no real die has.
 - The die is a 44px control at the upper right of the masthead with an
-  accessible name and keyboard hint. There is no second control.
-- The footer is the colophon: the mood's number, face, and paper, and how
-  many you have seen. Printing the page gives real letterhead: the name at
-  the top, the fine print at the foot, and room to write.
+  accessible name and keyboard hint. On desktop it has its own row; on
+  phones it sits beside JJH. There is no second control.
+- The colophon footer (the mood's number, face, and paper, and how many
+  you have seen) is parked: `showColophon` in `components/Letterhead.tsx`
+  brings it back.
+- Printing the page gives real letterhead: the name at the top, the
+  company, email, and address at the foot, and room to write.
 
 ## Motion
 
@@ -76,10 +81,23 @@ the name's one print pass on arrival.
 - The text is always the source of truth. The canvas only draws over it
   while letters move, and without scripts the page is plain letterhead.
 
+## Phones
+
+A phone gets the letterhead as one screen, like an app.
+
+- Nothing scrolls and nothing is cut off, from an iPhone SE with Safari's
+  bars showing (320 × 460) up, held upright or on its side.
+- Type and spacing follow the screen's height as well as its width. On
+  its side, the name and the address sit on the left and the note on the
+  right.
+- Taps never zoom and the page never bounces or pulls to refresh. Pinch
+  zoom stays, and a page zoomed in or set in larger text scrolls instead of
+  cutting anything off.
+
 ## Voice
 
-Plain, warm, and true. Say what the company does, what the client gets, and
-wink once. No em dashes, no slogans, no claims the company cannot back.
+Plain and true. Say what the company does. The fun lives in the experience,
+not the words. No em dashes, no slogans, no claims the company cannot back.
 
 ## Restraint
 

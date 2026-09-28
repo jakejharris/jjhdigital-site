@@ -3,7 +3,7 @@ export const site = {
   legalName: 'JJH DIGITAL LLC',
   url: 'https://jjhdigital.com',
   title: 'JJH DIGITAL LLC | Jake Harris',
-  description: 'Founded by Jake Harris, JJH DIGITAL LLC designs and builds websites, web apps, and AI tools from scratch. When the work is done, you own the code.',
+  description: 'Founded by Jake Harris, JJH DIGITAL LLC designs and builds thoughtful digital products, websites, and software for modern businesses.',
   email: 'jake@jjhdigital.com',
   founder: {
     name: 'Jake Harris',

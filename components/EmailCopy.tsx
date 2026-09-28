@@ -31,7 +31,7 @@ export default function EmailCopy({ email }: { email: string }) {
           </span>
         </button>
         <div className="email-feedback" role="status" aria-label="Contact" aria-live="polite">
-          {state === 'copied' ? 'Copied. Talk soon.' : state === 'failed' ? <a href={`mailto:${email}`}>Open your email app instead</a> : ''}
+          {state === 'copied' ? 'Copied to clipboard' : state === 'failed' ? <a href={`mailto:${email}`}>Open your email app instead</a> : ''}
         </div>
       </div>
       <noscript>

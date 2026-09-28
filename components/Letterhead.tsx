@@ -29,6 +29,10 @@ const moving = () => !matchMedia('(prefers-reduced-motion: reduce)').matches;
 // Milliseconds after navigation. The stylesheet shows the name at 1.2 s no
 // matter what; past this point the print pass is skipped.
 const arrivalBudget = 1000;
+// The colophon footer (the mood's number, face, paper, and how many have been
+// seen) is parked for now. Set this to true to bring it back. The deck, the
+// foil edition, and shared links work either way.
+const showColophon: boolean = false;
 
 type Action = 'push' | 'back' | 'reset' | 'preview';
 
@@ -202,8 +206,10 @@ export default function Letterhead({ baseFontClassName, children }: { baseFontCl
         setSelectedFontName(opening.fontName);
         setDesign(opening);
       } else {
-        // Nothing to open, or its face failed: start from No. 1.
+        // Nothing to open, or its face failed: start from No. 1, and let the
+        // address say so.
         applyAttributes(initialDesign);
+        if (location.hash) history.replaceState(history.state, '', location.pathname + location.search);
         if (source.current) startMorph();
         else reveal();
       }
@@ -391,16 +397,22 @@ export default function Letterhead({ baseFontClassName, children }: { baseFontCl
         </div>
         {children}
       </section>
-      <footer className="letterhead-footer">
-        <p className="colophon">
-          <span className="colophon-number">{number ? `No. ${number} of ${listed}.` : 'Lab preview.'}</span>{' '}
-          {secret ? 'Gold foil on black.' : `${describeMood(design)}.`}
-        </p>
+      {/* On screen the footer only shows with the colophon; in print it
+          always carries the contact line at the foot of the sheet. */}
+      <footer className="letterhead-footer" data-colophon={showColophon ? '' : undefined}>
+        {showColophon && (
+          <>
+            <p className="colophon">
+              <span className="colophon-number">{number ? `No. ${number} of ${listed}.` : 'Lab preview.'}</span>{' '}
+              {secret ? 'Gold foil on black.' : `${describeMood(design)}.`}
+            </p>
+            <p className="colophon-progress">
+              {progress}
+              <span className="keyboard-hint"> Space shuffles. Shift + Space goes back.</span>
+            </p>
+          </>
+        )}
         <p className="print-only">{site.legalName} · {site.email} · {site.url.replace('https://', '')}</p>
-        <p className="colophon-progress">
-          {progress}
-          <span className="keyboard-hint"> Space shuffles. Shift + Space goes back.</span>
-        </p>
       </footer>
       <span id="shuffle-hint" className="sr-only">
         Tap the name or roll the die for another of {listed} moods. Space does the same, and Shift + Space goes back.

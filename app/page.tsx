@@ -62,18 +62,16 @@ export default function HomePage() {
       />
       <Letterhead baseFontClassName={displayFont.className}>
         <div className="letterhead-note">
-          {/* The body follows the 18px mobile / 16px desktop rule in DESIGN.md. */}
+          {/* The body size follows the screen rules in DESIGN.md. */}
           <p>
             Founded by <a href={site.founder.url}>{site.founder.name}</a>,{' '}
-            {site.legalName} designs and builds websites, web apps, and AI tools
-            from scratch. When the work is done, you own the code. Making things
-            is the most fun work we know, so even this page has 216 moods. Tap
-            the name for another.
+            {site.legalName} designs and builds thoughtful digital products,
+            websites, and software for modern businesses. We turn ambitious
+            ideas into clear, capable experiences made to last.
           </p>
-
-          <div className="letterhead-contact">
-            <EmailCopy email={site.email} />
-          </div>
+        </div>
+        <div className="letterhead-contact">
+          <EmailCopy email={site.email} />
         </div>
       </Letterhead>
     </main>
