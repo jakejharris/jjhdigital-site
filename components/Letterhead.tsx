@@ -366,7 +366,7 @@ export default function Letterhead({ baseFontClassName, children }: { baseFontCl
               ref={wordmarkRef}
               type="button"
               className={`wordmark ${baseFontClassName}${secret ? ' wordmark-foil' : ''}`}
-              aria-label="Change the mood"
+              aria-label="JJH DIGITAL LLC, change the mood"
               aria-describedby="shuffle-hint"
               aria-busy={loadState === 'loading'}
               onPointerDown={(event) => { pressed.current = { x: event.clientX, y: event.clientY }; }}
@@ -382,7 +382,7 @@ export default function Letterhead({ baseFontClassName, children }: { baseFontCl
                 <span>JJH</span>{' '}
                 <span className="wordmark-ending">
                   <span className="wordmark-digital">DIGITAL</span>
-                  <span className="wordmark-llc" aria-hidden="true">LLC</span>
+                  <span className="wordmark-llc" aria-hidden="true">{'\u00a0'}LLC</span>
                 </span>
               </span>
             </button>
