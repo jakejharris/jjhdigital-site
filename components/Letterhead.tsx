@@ -382,7 +382,7 @@ export default function Letterhead({ baseFontClassName, children }: { baseFontCl
                 <span>JJH</span>{' '}
                 <span className="wordmark-ending">
                   <span className="wordmark-digital">DIGITAL</span>
-                  <span className="wordmark-llc" aria-hidden="true">LLC</span>
+                  <span className="wordmark-llc" aria-hidden="true">{'\u00a0'}LLC</span>
                 </span>
               </span>
             </button>

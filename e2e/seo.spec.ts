@@ -13,6 +13,8 @@ test('company and founder identity are crawlable with consistent search and shar
   await expect(page.locator('head > title')).toHaveCount(1);
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', 'https://jjhdigital.com');
   await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName('JJH DIGITAL LLC');
+  await expect(page.locator('.wordmark-type')).toHaveText('JJH DIGITAL LLC');
+  await expect(page.locator('.wordmark')).toHaveAccessibleName('JJH DIGITAL LLC, change the mood');
   await expect(page.getByRole('link', { name: 'Jake Harris', exact: true })).toHaveAttribute('href', 'https://jakejh.com/');
   await expect(page.locator('.letterhead-note p')).toHaveText(
     'Founded by Jake Harris, JJH DIGITAL LLC designs and builds thoughtful digital products, websites, ' +
