@@ -6,7 +6,7 @@ import {
 
 const fonts = ['Work Sans', 'Gloock', 'Unbounded', 'Monoton', 'Bebas Neue'];
 const type = (page: Page) => page.locator('.wordmark-type');
-const name = (page: Page) => page.getByRole('button', { name: 'Change the mood' });
+const name = (page: Page) => page.getByRole('button', { name: 'JJH DIGITAL LLC, change the mood' });
 const die = (page: Page) => page.getByRole('button', { name: 'Roll the die' });
 const status = (page: Page) => page.getByRole('status', { name: 'Mood' });
 

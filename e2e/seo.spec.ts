@@ -13,7 +13,7 @@ test('company and founder identity are crawlable with consistent search and shar
   await expect(page.locator('head > title')).toHaveCount(1);
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', 'https://jjhdigital.com');
   await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName('JJH DIGITAL LLC');
-  await expect(page.getByRole('link', { name: 'Jake Harris', exact: true })).toHaveAttribute('href', 'https://www.jakejh.com/');
+  await expect(page.getByRole('link', { name: 'Jake Harris', exact: true })).toHaveAttribute('href', 'https://jakejh.com/');
   await expect(page.locator('.letterhead-note p')).toHaveText(
     'Founded by Jake Harris, JJH DIGITAL LLC designs and builds thoughtful digital products, websites, ' +
     'and software for modern businesses. We turn ambitious ideas into clear, capable experiences made to last.'
@@ -45,7 +45,7 @@ test('company and founder identity are crawlable with consistent search and shar
   expect(organization).toMatchObject({
     name: 'JJH DIGITAL', legalName: 'JJH DIGITAL LLC', alternateName: 'JJH DIGITAL LLC',
     url: 'https://jjhdigital.com', email: 'jake@jjhdigital.com',
-    founder: { '@type': 'Person', name: 'Jake Harris', url: 'https://www.jakejh.com/' },
+    founder: { '@type': 'Person', name: 'Jake Harris', url: 'https://jakejh.com/' },
   });
   expect(website).toMatchObject({
     name: 'JJH DIGITAL', alternateName: 'JJH DIGITAL LLC', url: 'https://jjhdigital.com',

@@ -366,7 +366,7 @@ export default function Letterhead({ baseFontClassName, children }: { baseFontCl
               ref={wordmarkRef}
               type="button"
               className={`wordmark ${baseFontClassName}${secret ? ' wordmark-foil' : ''}`}
-              aria-label="Change the mood"
+              aria-label="JJH DIGITAL LLC, change the mood"
               aria-describedby="shuffle-hint"
               aria-busy={loadState === 'loading'}
               onPointerDown={(event) => { pressed.current = { x: event.clientX, y: event.clientY }; }}
