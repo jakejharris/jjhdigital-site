@@ -87,11 +87,17 @@
 
 .wordmark-llc {
   display: inline-block;
+  margin-left: .35em;
   font-size: max(13px, .24em);
   line-height: 1;
   font-weight: 400;
   letter-spacing: var(--homepage-wordmark-tracking);
   color: var(--homepage-ink);
+}
+
+.wordmark-gap {
+  font-size: 0;
+  letter-spacing: 0;
 }
 
 /* The name as pixels. The canvas only draws while letters move; the text
