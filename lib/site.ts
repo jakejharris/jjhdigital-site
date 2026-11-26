@@ -7,7 +7,7 @@ export const site = {
   email: 'jake@jjhdigital.com',
   founder: {
     name: 'Jake Harris',
-    url: 'https://www.jakejh.com/',
+    url: 'https://jakejh.com/',
     sameAs: [
       'https://github.com/jakejharris',
       'https://linkedin.com/in/jakejh',

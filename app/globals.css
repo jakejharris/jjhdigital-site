@@ -95,6 +95,11 @@
   color: var(--homepage-ink);
 }
 
+.wordmark-gap {
+  font-size: 0;
+  letter-spacing: 0;
+}
+
 /* The name as pixels. The canvas only draws while letters move; the text
    underneath stays the heading, the button label, and the fallback. */
 .wordmark-pixels {

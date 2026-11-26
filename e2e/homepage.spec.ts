@@ -6,7 +6,7 @@ import {
 
 const fonts = ['Work Sans', 'Gloock', 'Unbounded', 'Monoton', 'Bebas Neue'];
 const type = (page: Page) => page.locator('.wordmark-type');
-const name = (page: Page) => page.getByRole('button', { name: 'Change the mood' });
+const name = (page: Page) => page.getByRole('button', { name: 'JJH DIGITAL LLC, change the mood' });
 const die = (page: Page) => page.getByRole('button', { name: 'Roll the die' });
 const status = (page: Page) => page.getByRole('status', { name: 'Mood' });
 
@@ -61,8 +61,10 @@ async function expectFits(page: Page) {
   expect(sizes.glyphLine).toBeLessThanOrEqual(sizes.available);
   expect(sizes.page).toBeLessThanOrEqual(sizes.viewport);
   const digital = (await page.locator('.wordmark-digital').boundingBox())!;
-  const llc = (await page.locator('.wordmark-llc').boundingBox())!;
-  expect(llc.x).toBeGreaterThanOrEqual(digital.x + digital.width);
+  const llcType = page.locator('.wordmark-llc');
+  const llc = (await llcType.boundingBox())!;
+  const llcFontSize = await llcType.evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
+  expect(llc.x - (digital.x + digital.width)).toBeGreaterThan(.3 * llcFontSize);
   expect(llc.y).toBeGreaterThan(digital.y);
   expect(llc.y + llc.height).toBeLessThanOrEqual(digital.y + digital.height + 1);
   if (await die(page).isVisible()) {
